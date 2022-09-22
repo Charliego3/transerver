@@ -11,7 +11,6 @@ import (
 	"github.com/transerver/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
-	"google.golang.org/grpc/status"
 )
 
 func DefaultErrorHandler(
@@ -104,14 +103,14 @@ func DefaultRoutingErrorHandler(
 	r *http.Request,
 	httpStatus int,
 ) {
-	sterr := status.Error(codes.Internal, "Unexpected routing error")
+	sterr := utils.NewErrResponse(codes.Internal, "Unexpected routing error")
 	switch httpStatus {
 	case http.StatusBadRequest:
-		sterr = status.Error(codes.InvalidArgument, http.StatusText(httpStatus))
+		sterr = utils.NewErrResponse(codes.InvalidArgument, http.StatusText(httpStatus))
 	case http.StatusMethodNotAllowed:
-		sterr = status.Error(codes.Unimplemented, http.StatusText(httpStatus))
+		sterr = utils.NewErrResponse(codes.Unimplemented, http.StatusText(httpStatus))
 	case http.StatusNotFound:
-		sterr = status.Error(codes.NotFound, http.StatusText(httpStatus))
+		sterr = utils.NewErrResponse(codes.NotFound, http.StatusText(httpStatus))
 	}
 	runtime.HTTPError(ctx, mux, marshaler, w, r, sterr)
 }
