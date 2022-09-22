@@ -44,5 +44,6 @@ func NewHTTPServerWithOptions(
 func DefaultOpts() []runtime.ServeMuxOption {
 	return []runtime.ServeMuxOption{
 		runtime.WithErrorHandler(DefaultErrorHandler),
+		runtime.WithRoutingErrorHandler(DefaultRoutingErrorHandler),
 	}
 }
