@@ -1,9 +1,10 @@
-package http
+package hs
 
 import (
 	"encoding/json"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/transerver/utils"
 	"google.golang.org/genproto/googleapis/api/httpbody"
 )
 
@@ -19,11 +20,15 @@ func (h *JSONMarshaler) ContentType(v interface{}) string {
 // google.api.HttpBody message, otherwise it falls back to the default Marshaler.
 func (h *JSONMarshaler) Marshal(v interface{}) ([]byte, error) {
 	if httpBody, ok := v.(*httpbody.HttpBody); ok {
-		return httpBody.Data, nil
+		return h.HTTPBodyMarshaler.Marshal(httpBody)
 	}
 
 	if v, ok := v.([]byte); ok {
 		return v, nil
+	}
+
+	if _, ok := v.(utils.ResponseEntity); !ok {
+		v = utils.NewResponse(v)
 	}
 
 	return json.Marshal(v)
