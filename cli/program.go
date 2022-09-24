@@ -1,7 +1,6 @@
 package main
 
 import (
-	"sync/atomic"
 	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -9,7 +8,7 @@ import (
 )
 
 type IModel interface {
-	Update(tea.Msg) (tea.Model, tea.Cmd)
+	Update(tea.Msg) tea.Cmd
 	View() string
 	Callback(Program)
 }
@@ -17,7 +16,7 @@ type IModel interface {
 type Program struct {
 	*tea.Program
 	models   []IModel
-	current  atomic.Int32
+	current  int
 	quitting bool
 	done     bool
 }
@@ -42,21 +41,23 @@ func (pg Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyCtrlC, tea.KeyCtrlQ:
+		case tea.KeyCtrlC:
 			pg.quitting = true
 			return pg, tea.Quit
 
 		case tea.KeyEnter:
-			if pg.nonNext() {
-				pg.done = true
-				return pg, tea.Quit
+			c := pg.Current()
+			if _, ok := c.(*Input); ok {
+				cmd := c.Update(msg)
+				if cmd == nil {
+					return pg, cmd
+				}
 			}
 
-			c := pg.Current()
 			go func() {
 				c.Callback(pg)
 			}()
-			pg.current.Add(1)
+			pg.current++
 			if pg.nonNext() {
 				time.Sleep(time.Millisecond)
 				pg.done = true
@@ -65,11 +66,7 @@ func (pg Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return pg, nil
 		}
 	}
-	m, cmd := pg.Current().Update(msg)
-	if m == nil {
-		m = pg
-	}
-	return m, cmd
+	return pg, pg.Current().Update(msg)
 }
 
 func (pg Program) View() string {
@@ -83,19 +80,19 @@ func (pg Program) View() string {
 }
 
 func (pg *Program) nonNext() bool {
-	current := pg.current.Load()
-	return current < 0 || int(current) > len(pg.models)-1
+	current := pg.current
+	return current < 0 || current > len(pg.models)-1
 }
 
 func (pg Program) Current() IModel {
 	if pg.nonNext() {
 		return &empty{}
 	}
-	return pg.models[pg.current.Load()]
+	return pg.models[pg.current]
 }
 
 type empty struct{}
 
-func (empty) Update(tea.Msg) (tea.Model, tea.Cmd) { return nil, nil }
-func (empty) View() string                        { return "" }
-func (empty) Callback(Program)                    {}
+func (empty) Update(tea.Msg) tea.Cmd { return nil }
+func (empty) View() string           { return "" }
+func (empty) Callback(Program)       {}

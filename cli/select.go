@@ -48,7 +48,7 @@ func NewSelect(items []list.Item, opts ...SelectOpt) IModel {
 	l.SetShowPagination(sl.showPagination)
 	l.SetShowHelp(sl.showHelp)
 	l.SetShowTitle(false)
-	l.KeyMap.Quit.SetEnabled(false)
+	l.KeyMap.Quit = Quit
 	l.KeyMap.ShowFullHelp.SetEnabled(false)
 	l.Styles.PaginationStyle = PaginationStyle
 	l.Styles.HelpStyle = HelpStyle
@@ -56,10 +56,10 @@ func NewSelect(items []list.Item, opts ...SelectOpt) IModel {
 	return sl
 }
 
-func (l *Select) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (l *Select) Update(msg tea.Msg) tea.Cmd {
 	var cmd tea.Cmd
 	l.Model, cmd = l.Model.Update(msg)
-	return nil, cmd
+	return cmd
 }
 
 func (l *Select) View() string {
