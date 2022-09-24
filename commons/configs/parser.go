@@ -1,4 +1,4 @@
-package config
+package configs
 
 import (
 	"fmt"
@@ -40,6 +40,13 @@ func (c *Config) Load(source any) {
 	}
 }
 
+func (c *Config) Bind(v any) {
+	if c.err != nil {
+		return
+	}
+	c.err = cv2.BindStruct("", &v)
+}
+
 func ParseWithoutOpts(bootstrap any) (Bootstrap, error) {
 	return Parse(bootstrap)
 }
@@ -63,5 +70,6 @@ func Parse(bootstrap any, opts ...Option) (Bootstrap, error) {
 	cfg.Load([]byte("")) // from etcd
 	cfg.Load(cfg.source)
 	cfg.Load(cfg.paths)
+	cfg.Bind(&bootstrap)
 	return bootstrap.(Bootstrap), cfg.err
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/soheilhy/cmux"
-	"github.com/transerver/commons/config"
+	"github.com/transerver/commons/configs"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -13,12 +13,12 @@ import (
 type App struct {
 	hs *http.Server
 	gs *grpc.Server
-	bs config.Bootstrap
+	bs configs.Bootstrap
 	lg *zap.Logger
 }
 
 func NewApp(
-	bs config.Bootstrap,
+	bs configs.Bootstrap,
 	lg *zap.Logger,
 	hs *http.Server,
 	gs *grpc.Server,

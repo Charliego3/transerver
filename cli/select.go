@@ -80,7 +80,7 @@ func (l *Select) Callback(pg *Program) (string, bool) {
 
 type SelectItem string
 
-func (i SelectItem) FilterValue() string { return "" }
+func (i SelectItem) FilterValue() string { return string(i) }
 
 type selectItemDelegate struct{}
 
