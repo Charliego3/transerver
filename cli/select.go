@@ -20,7 +20,7 @@ type Select struct {
 	showHelp       bool
 	filterEnable   bool
 
-	callback func(list.Model) string
+	callback func(list.Model) (string, bool)
 }
 
 func NewSelect(items []list.Item, opts ...SelectOpt) IModel {
@@ -70,11 +70,12 @@ func (l *Select) View() string {
 	return s + "\n" + l.Model.View()
 }
 
-func (l *Select) Callback(pg Program) {
+func (l *Select) Callback(pg *Program) (string, bool) {
 	if l.callback == nil {
-		return
+		return "", false
 	}
-	pg.Println(l.callback(l.Model))
+	content, exit := l.callback(l.Model)
+	return content, exit
 }
 
 type SelectItem string
@@ -152,7 +153,7 @@ func WithFilteringEnable() SelectOpt {
 	}
 }
 
-func WithCallback(callback func(list.Model) string) SelectOpt {
+func WithCallback(callback func(list.Model) (string, bool)) SelectOpt {
 	return func(s *Select) {
 		s.callback = callback
 	}

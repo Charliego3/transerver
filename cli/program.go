@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gookit/goutil/strutil"
 	"time"
 
 	"github.com/charmbracelet/bubbles/textinput"
@@ -10,34 +11,46 @@ import (
 type IModel interface {
 	Update(tea.Msg) tea.Cmd
 	View() string
-	Callback(Program)
+	Callback(*Program) (string, bool)
 }
 
 type Program struct {
 	*tea.Program
-	models   []IModel
-	current  int
+	models   []func() IModel
+	current  IModel
 	quitting bool
 	done     bool
 }
 
-func NewProgram(models ...IModel) *tea.Program {
-	if len(models) == 0 {
-		println(ErrStylr.Render("No model specified!"))
-		return nil
-	}
-
-	pg := &Program{models: models}
+func NewProgram(mfs ...func() IModel) *Program {
+	pg := &Program{models: mfs}
 	p := tea.NewProgram(pg)
 	pg.Program = p
-	return p
+	return pg
+}
+
+func (pg *Program) AddModel(mfs ...func() IModel) {
+	pg.models = append(pg.models, mfs...)
+}
+
+func (pg *Program) Start() {
+	if len(pg.models) == 0 {
+		println(ErrStyle.Render("No model specified!"))
+		return
+	}
+
+	pg.Next()
+	err := pg.Program.Start()
+	if err != nil {
+		println(ErrStyle.Render(err.Error()))
+	}
 }
 
 func (pg Program) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (pg Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (pg *Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
@@ -46,7 +59,7 @@ func (pg Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return pg, tea.Quit
 
 		case tea.KeyEnter:
-			c := pg.Current()
+			c := pg.current
 			if _, ok := c.(*Input); ok {
 				cmd := c.Update(msg)
 				if cmd == nil {
@@ -54,11 +67,14 @@ func (pg Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-			go func() {
-				c.Callback(pg)
-			}()
-			pg.current++
-			if pg.nonNext() {
+			content, exit := c.Callback(pg)
+			if strutil.IsNotBlank(content) {
+				go func() {
+					pg.Println(content)
+				}()
+			}
+			pg.Next()
+			if _, ok := pg.current.(*empty); ok || exit {
 				time.Sleep(time.Millisecond)
 				pg.done = true
 				return pg, tea.Quit
@@ -66,33 +82,31 @@ func (pg Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return pg, nil
 		}
 	}
-	return pg, pg.Current().Update(msg)
+	return pg, pg.current.Update(msg)
 }
 
 func (pg Program) View() string {
 	if pg.done {
-		return ""
+		return "\n"
 	}
 	if pg.quitting {
 		return QuitTextStyle.Render("Bye-Bye!")
 	}
-	return pg.Current().View()
+	return pg.current.View()
 }
 
-func (pg *Program) nonNext() bool {
-	current := pg.current
-	return current < 0 || current > len(pg.models)-1
-}
-
-func (pg Program) Current() IModel {
-	if pg.nonNext() {
-		return &empty{}
+func (pg *Program) Next() {
+	if len(pg.models) == 0 {
+		pg.current = &empty{}
+		return
 	}
-	return pg.models[pg.current]
+
+	pg.current = pg.models[0]()
+	pg.models = pg.models[1:]
 }
 
 type empty struct{}
 
-func (empty) Update(tea.Msg) tea.Cmd { return nil }
-func (empty) View() string           { return "" }
-func (empty) Callback(Program)       {}
+func (empty) Update(tea.Msg) tea.Cmd           { return nil }
+func (empty) View() string                     { return "" }
+func (empty) Callback(*Program) (string, bool) { return "", true }

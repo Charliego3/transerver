@@ -22,28 +22,33 @@ type Input struct {
 	title       string
 	placeholder string
 	focusIndex  int
-	callback    func([]string) string
+	callbacks   func([]string) (string, bool)
+	callback    func(string) (string, bool)
+	multi       bool
 }
 
-func NewInput(title, placeholder string, callback func([]string) string) *Input {
-	t := newInput(placeholder)
+func NewInput(title string, opts ...InputOpt) *Input {
+	i := &Input{
+		title: title,
+		help:  help.New(),
+	}
+	for _, opt := range opts {
+		opt(i)
+	}
+
+	t := i.newInput()
 	t.Focus()
 	t.SetCursorMode(textinput.CursorBlink)
-	return &Input{
-		inputs:      []textinput.Model{t},
-		help:        help.New(),
-		title:       title,
-		focusIndex:  0,
-		placeholder: placeholder,
-		callback:    callback,
-	}
+
+	i.inputs = []textinput.Model{t}
+	return i
 }
 
-func newInput(placeholder string) textinput.Model {
+func (m *Input) newInput() textinput.Model {
 	t := textinput.New()
 	t.CursorStyle = FocusedStyle.Copy()
 	t.CharLimit = 32
-	t.Placeholder = placeholder
+	t.Placeholder = m.placeholder
 	t.PromptStyle = FocusedStyle
 	t.TextStyle = FocusedStyle
 	return t
@@ -60,7 +65,10 @@ func (m *Input) Update(msg tea.Msg) tea.Cmd {
 			m.inputs = append(m.inputs[:m.focusIndex], m.inputs[m.focusIndex+1:]...)
 			return m.update(msg.String())
 		case "tab":
-			m.inputs = append(m.inputs, newInput(m.placeholder))
+			if !m.multi {
+				return nil
+			}
+			m.inputs = append(m.inputs, m.newInput())
 			fallthrough
 		case "enter", "up", "down":
 			return m.update(msg.String())
@@ -73,7 +81,7 @@ func (m *Input) Update(msg tea.Msg) tea.Cmd {
 }
 
 func (m *Input) update(key string) tea.Cmd {
-	if key == "enter" && m.focusIndex == len(m.inputs) {
+	if key == "enter" && (!m.multi || m.focusIndex == len(m.inputs)) {
 		return func() tea.Msg { return nil }
 	}
 
@@ -128,27 +136,62 @@ func (m *Input) View() string {
 		}
 	}
 
-	btn := LmarginStyle.Render(BlurredButton)
-	if m.focusIndex == len(m.inputs) {
-		btn = FocusedButton
+	if m.multi {
+		btn := LmarginStyle.Render(BlurredButton)
+		if m.focusIndex == len(m.inputs) {
+			btn = FocusedButton
+		}
+		b.WriteString("\n\n")
+		b.WriteString(btn)
 	}
-	b.WriteString("\n\n")
-	b.WriteString(btn)
 	b.WriteByte('\n')
-	b.WriteString(THelpStyle.Render(m.help.ShortHelpView(keys)))
+	ks := keys
+	if !m.multi {
+		ks = ks[2:]
+	}
+	b.WriteString(THelpStyle.Render(m.help.ShortHelpView(ks)))
 	return b.String()
 }
 
-func (m *Input) Callback(pg Program) {
-	if m.callback == nil {
-		return
-	}
-
-	var values []string
-	for _, i := range m.inputs {
-		if strutil.IsNotBlank(i.Value()) {
-			values = append(values, i.Value())
+func (m *Input) Callback(pg *Program) (string, bool) {
+	var content string
+	var exit bool
+	if m.multi && m.callbacks != nil {
+		var values []string
+		for _, i := range m.inputs {
+			if strutil.IsNotBlank(i.Value()) {
+				values = append(values, i.Value())
+			}
 		}
+		content, exit = m.callbacks(values)
+	} else if m.callback != nil {
+		content, exit = m.callback(m.inputs[0].Value())
 	}
-	pg.Println(m.callback(values))
+	return content, exit
+}
+
+type InputOpt func(*Input)
+
+func WithPlaceholder(placeholder string) InputOpt {
+	return func(i *Input) {
+		i.placeholder = placeholder
+	}
+}
+
+func WithMulti() InputOpt {
+	return func(i *Input) {
+		i.multi = true
+	}
+}
+
+func WithInputCallbacks(fn func([]string) (string, bool)) InputOpt {
+	return func(i *Input) {
+		i.callbacks = fn
+	}
+}
+
+func WithInputCallback(fn func(string) (string, bool)) InputOpt {
+	return func(i *Input) {
+		i.callback = fn
+	}
 }
