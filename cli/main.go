@@ -25,17 +25,19 @@ var (
 )
 
 type Config struct {
-	typ            int // actions index
-	modName        string
-	modPath        string
-	modURL         string
-	usingCfgOpt    bool
-	usingETCDOpt   bool
-	usingGRPCOpt   bool
-	hsOpt          int
-	usingLogOpt    bool
-	usingRedisOpts bool
-	services       []string
+	typ              int // actions index
+	modPath          string
+	ModURL           string
+	ModName          string
+	UsingCfgOpt      bool
+	UsingETCDOpt     bool
+	UsingGRPCOpt     bool
+	HsOpt            int
+	UsingLogOpt      bool
+	UsingRedisOpt    bool
+	Services         []string
+	CurrService      string
+	CurrServiceLower string
 }
 
 func main() {
@@ -83,13 +85,13 @@ func generate() IModel {
 
 func askModURL() IModel {
 	return NewInput("What is mod init URL?",
-		WithPlaceholder(cfg.modName),
+		WithPlaceholder(cfg.ModName),
 		WithInputCallback(func(url string) (string, bool) {
 			if strutil.IsBlank(url) {
-				url = cfg.modName
+				url = cfg.ModName
 			}
-			cfg.modURL = url
-			return output("Mod init URL", cfg.modURL), false
+			cfg.ModURL = url
+			return output("Mod init URL", cfg.ModURL), false
 		}))
 }
 
@@ -107,9 +109,9 @@ func inputServiceNames() IModel {
 	return NewInput("Please enter service name", WithMulti(),
 		WithInputCallbacks(func(s []string) (string, bool) {
 			if len(s) == 0 {
-				cfg.services = []string{"Greeter"}
+				cfg.Services = []string{"Greeter"}
 			} else {
-				cfg.services = s
+				cfg.Services = s
 			}
 			return output("Service names", "[%s]", strings.Join(s, ", ")), false
 		}))
@@ -117,14 +119,14 @@ func inputServiceNames() IModel {
 
 func askRedisOpts() IModel {
 	return NewConfirm("Want using redis options?", func(b bool) (string, bool) {
-		cfg.usingRedisOpts = b
+		cfg.UsingRedisOpt = b
 		return boutput("Using redis options", b), false
 	})
 }
 
 func askLoggerOpts() IModel {
 	return NewConfirm("Want using logger writer?", func(b bool) (string, bool) {
-		cfg.usingLogOpt = b
+		cfg.UsingLogOpt = b
 		return boutput("Using logger writer", b), false
 	})
 }
@@ -139,22 +141,22 @@ func selectHsOpts() IModel {
 		WithTitle("What type using HTTP server options?"),
 		WithShowHelp(),
 		WithCallback(func(m list.Model) (string, bool) {
-			cfg.hsOpt = m.Index()
+			cfg.HsOpt = m.Index()
 			return output("Using HTTP options", m.SelectedItem().FilterValue()), false
 		}))
 }
 
 func askETCDOpts() IModel {
 	return NewConfirm("Want using ETCD optoins?", func(b bool) (string, bool) {
-		cfg.usingETCDOpt = b
+		cfg.UsingETCDOpt = b
 		return boutput("Using ETCD options", b), false
 	})
 }
 
 func askCfgOpts() IModel {
 	return NewConfirm("Want using Config parser optoins?", func(b bool) (string, bool) {
-		cfg.usingCfgOpt = b
-		return boutput("Using Config parser options", b), false
+		cfg.UsingCfgOpt = b
+		return boutput("Using Config options", b), false
 	})
 }
 
@@ -166,25 +168,25 @@ func askModName() IModel {
 			if strutil.IsBlank(s) {
 				return Exit("Not input anything for mod name..."), true
 			}
-			cfg.modName = s
+			cfg.ModName = s
 
-			if cfg.modName == "g" {
+			if cfg.ModName == "g" {
 				_ = os.RemoveAll("g")
 			}
-			return output("Module name", cfg.modName), false
+			return output("Module name", cfg.ModName), false
 		}))
 }
 
 func askModPath() IModel {
 	return NewInput(
 		"What is the mod directory?",
-		WithPlaceholder(filepath.Join(wd, cfg.modName)),
+		WithPlaceholder(filepath.Join(wd, cfg.ModName)),
 		WithInputCallback(func(path string) (string, bool) {
 			if strutil.IsBlank(path) {
 				if cfg.typ != 0 {
 					return Exit("Please enter absolute path or module name"), true
 				}
-				cfg.modPath = filepath.Join(wd, cfg.modName)
+				cfg.modPath = filepath.Join(wd, cfg.ModName)
 			} else {
 				if filepath.IsAbs(path) {
 					cfg.modPath = path
@@ -193,7 +195,7 @@ func askModPath() IModel {
 				}
 
 				if cfg.typ > 0 {
-					cfg.modName = filepath.Base(cfg.modPath)
+					cfg.ModName = filepath.Base(cfg.modPath)
 				}
 			}
 
@@ -209,7 +211,7 @@ func askModPath() IModel {
 
 func askGRPCOpts() IModel {
 	return NewConfirm("Want using GRPC optoins?", func(b bool) (string, bool) {
-		cfg.usingGRPCOpt = b
+		cfg.UsingGRPCOpt = b
 		return boutput("Using GRPC options", b), false
 	})
 }

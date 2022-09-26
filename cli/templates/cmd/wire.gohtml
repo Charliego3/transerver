@@ -1,0 +1,55 @@
+//go:build wireinject
+// +build wireinject
+
+package main
+
+import (
+	"github.com/google/wire"
+	"github.com/transerver/commons"
+	"github.com/transerver/commons/configs"
+{{/*	"github.com/transerver/commons/etcds"*/}}
+	"github.com/transerver/commons/gs"
+	"github.com/transerver/commons/hs"
+	"github.com/transerver/commons/logger"
+{{/*	"github.com/transerver/commons/redis"*/}}
+)
+
+func wireApp() (*commons.App, func(), error) {
+	wire.Build(
+		commons.NewApp,
+		{{- if .UsingCfgOpt }}
+		configs.Parse,
+		{{- else }}
+		configs.ParseWithoutOpts,
+		{{- end }}
+{{/*		{{- if .UsingETCDOpt }}*/}}
+{{/*		etcds.NewClient,*/}}
+{{/*		{{- else }}*/}}
+{{/*		etcds.NewClientWithoutOpts,*/}}
+{{/*		{{- end }}*/}}
+		{{- if .UsingGRPCOpt }}
+		gs.NewGRPCServer,
+		{{- else }}
+		gs.NewGRPCServerWithoutOpts,
+		{{- end }}
+		{{- if eq .HsOpt 0 }}
+		hs.NewHTTPServerWithOptions,
+		{{- else if eq .HsOpt 1 }}
+		hs.NewHTTPServerWithoutMuxOpts,
+		{{- else }}
+		hs.NewHTTPServerWithoutOpts,
+		{{- end }}
+		{{- if .UsingLogOpt }}
+		logger.NewLogger,
+		{{- else }}
+		logger.NewLoggerWithoutWriter,
+		{{- end }}
+{{/*		{{- if .UsingRedisOpt }}*/}}
+{{/*		redis.NewClient,*/}}
+{{/*		{{- else }}*/}}
+{{/*		redis.NewClientWithoutOpts,*/}}
+{{/*		{{- end }}*/}}
+		providerSet,
+	)
+	return nil, nil, nil
+}

@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Generator struct {
@@ -44,39 +45,50 @@ func (g *Generator) solvePath() {
 	g.maker.MKDir(g.bizPath)
 	g.maker.MKDir(g.confPath)
 	g.maker.MKDir(g.dataPath)
-	g.maker.MKDir(g.entPath)
 	g.maker.MKDir(g.servicePath)
 }
 
-func (g *Generator) genFile() {
-	g.maker.Template(filepath.Join(g.cmdPath, "main.go"), "main.go", nil)
-	g.maker.Template(filepath.Join(g.cmdPath, "wire.go"), "wire.go", nil)
-	g.maker.Template(filepath.Join(g.bizPath, "biz.go"), "biz.go", nil)
+func (g *Generator) genBizs() {
+	g.maker.Template(filepath.Join(g.cmdPath, "main.go"), "main.gohtml", g.cfg)
+	g.maker.Template(filepath.Join(g.cmdPath, "wire.go"), "wire.gohtml", g.cfg)
+	g.maker.Template(filepath.Join(g.bizPath, "biz.go"), "biz.gohtml", g.cfg)
 	g.maker.Template(filepath.Join(g.confPath, "conf.go"), "conf.go", nil)
-	g.maker.Template(filepath.Join(g.dataPath, "data.go"), "data.go", nil)
-	g.maker.Template(filepath.Join(g.servicePath, "service.go"), "service.go", nil)
-
-	g.maker.Template(filepath.Join(g.bizPath, "greeter.go"), "bgreeter.go", nil)
-	g.maker.Template(filepath.Join(g.dataPath, "greeter.go"), "dgreeter.go", nil)
-	g.maker.Template(filepath.Join(g.servicePath, "greeter.go"), "sgreeter.go", nil)
+	g.maker.Template(filepath.Join(g.confPath, "config.yaml"), "config.yaml", nil)
+	g.maker.Template(filepath.Join(g.confPath, "database.go"), "database.go", nil)
+	g.maker.Template(filepath.Join(g.dataPath, "data.go"), "data.gohtml", g.cfg)
+	g.maker.Template(filepath.Join(g.servicePath, "service.go"), "service.gohtml", g.cfg)
 }
 
-func (g *Generator) runCmd() {
+func (g *Generator) genServices() {
+	for _, name := range g.cfg.Services {
+		lowerName := strings.ToLower(name)
+		fileName := lowerName + ".go"
+		g.cfg.CurrService = name
+		g.cfg.CurrServiceLower = lowerName
+		g.maker.Template(filepath.Join(g.bizPath, fileName), "bgreeter.gohtml", g.cfg)
+		g.maker.Template(filepath.Join(g.dataPath, fileName), "dgreeter.gohtml", g.cfg)
+		g.maker.Template(filepath.Join(g.servicePath, fileName), "sgreeter.gohtml", g.cfg)
+	}
+}
+
+func (g *Generator) createModule() {
 	g.maker.Chdir(g.cfg.modPath)
-	g.maker.Cmd("go", "mod", "init", g.cfg.modURL)
-	g.maker.Cmd("go", "get", "-u", "entgo.io/ent/cmd/ent")
-	g.maker.Cmd("go", "get", "-u", "github.com/google/wire")
-	g.maker.Chdir(g.internalPath)
-	g.maker.Cmd("go", append([]string{"run", "entgo.io/ent/cmd/ent", "init"}, g.cfg.services...)...)
+	g.maker.Cmd("go mod init", g.cfg.ModURL)
 	if g.usingWork() {
 		g.maker.Chdir(filepath.Dir(g.cfg.modPath))
-		g.maker.Cmd("go", "work", "use", g.cfg.modName)
-		g.maker.Cmd("go", "work", "sync")
+		g.maker.Cmd("go work use", g.cfg.ModName)
+		g.maker.Cmd("go work sync")
 	}
-	g.maker.Chdir(g.entPath)
-	g.maker.Cmd("go", "run", "entgo.io/ent/cmd/ent", "generate", "./schema")
+	if len(g.cfg.Services) > 0 {
+		g.maker.Chdir(g.internalPath)
+		g.maker.Cmd("go get -u entgo.io/ent/cmd/ent")
+		g.maker.Cmd("go run entgo.io/ent/cmd/ent init", g.cfg.Services...)
+		g.maker.Chdir(g.entPath)
+		g.maker.Cmd("go run entgo.io/ent/cmd/ent generate ./schema")
+	}
 	g.maker.Chdir(g.cmdPath)
-	g.maker.Cmd("go", "run", "github.com/google/wire/cmd/wire", "./...")
+	g.maker.Cmd("go get -u github.com/google/wire")
+	g.maker.Cmd("go run github.com/google/wire/cmd/wire ./...")
 }
 
 func (g *Generator) usingWork() bool {
@@ -89,8 +101,9 @@ func (g *Generator) gen() {
 	g.solvePath()
 	switch g.cfg.typ {
 	case 0: // Create Module
-		g.genFile()
-		g.runCmd()
+		g.genBizs()
+		g.genServices()
+		g.createModule()
 	case 1: // Add Service
 	case 2: // Remove Module
 	case 3: // Remove Service

@@ -3,5 +3,7 @@ package biz
 import "github.com/google/wire"
 
 var ProviderSet = wire.NewSet(
-	NewGreeterUsecase,
+{{- range $name := .Services }}
+	New{{ $name }}Usecase,
+{{- end }}
 )

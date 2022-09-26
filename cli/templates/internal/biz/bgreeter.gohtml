@@ -1,0 +1,34 @@
+package biz
+
+import (
+	"context"
+	"g/internal/ent"
+	"go.uber.org/zap"
+)
+
+type {{ .CurrService }}Repo interface {
+	FindById(ctx context.Context, id int64) (*ent.{{ .CurrService }}, error)
+}
+
+type {{ .CurrService }}Usecase struct {
+	repo   {{ .CurrService }}Repo
+	logger *zap.Logger
+}
+
+type {{ .CurrService }}Helper struct {
+	repo   {{ .CurrService }}Repo
+	logger *zap.Logger
+	err    error
+}
+
+func New{{ .CurrService }}Usecase(repo {{ .CurrService }}Repo, logger *zap.Logger) *{{ .CurrService }}Usecase {
+	return &{{ .CurrService }}Usecase{repo: repo, logger: logger}
+}
+
+func (g *{{ .CurrService }}Usecase) Helper() *{{ .CurrService }}Helper {
+	return &{{ .CurrService }}Helper{repo: g.repo, logger: g.logger}
+}
+
+func (h *{{ .CurrService }}Helper) Err() error {
+	return h.err
+}

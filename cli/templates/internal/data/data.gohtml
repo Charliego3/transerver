@@ -8,13 +8,15 @@ import (
 
 var ProviderSet = wire.NewSet(
 	NewData,
-	NewGreeterRepo,
+{{- range $name := .Services }}
+	New{{ $name }}Repo,
+{{- end }}
 )
 
 type Data struct {
 	logger *zap.Logger
 }
 
-func NewData(bootstrap configs.Bootstrap, logger *zap.Logger) *Data {
-	return &Data{logger: logger}
+func NewData(bootstrap configs.Bootstrap, logger *zap.Logger) (*Data, func(), error) {
+	return &Data{logger: logger}, func() {}, nil
 }

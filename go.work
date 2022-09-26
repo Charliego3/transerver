@@ -3,6 +3,5 @@ go 1.19
 use (
 	./cli
 	./commons
-	./g
 	./utils
 )

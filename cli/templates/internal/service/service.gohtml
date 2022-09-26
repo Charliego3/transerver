@@ -1,0 +1,25 @@
+package service
+
+import (
+	"github.com/google/wire"
+	"github.com/transerver/commons"
+)
+
+var ProviderSet = wire.NewSet(
+	MakeServices,
+{{- range $name := .Services }}
+	New{{ $name }}Service,
+{{- end }}
+)
+
+func MakeServices(
+{{- range $idx, $name := .Services }}
+	s{{ $idx }} *{{ $name }}Service,
+{{- end }}
+) []commons.Service {
+	return []commons.Service{
+	{{- range $idx, $_ := .Services }}
+		s{{ $idx }},
+	{{- end }}
+	}
+}

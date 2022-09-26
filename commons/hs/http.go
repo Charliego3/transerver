@@ -41,7 +41,7 @@ func NewHTTPServerWithOptions(
 	return &http.Server{Handler: mux}, nil
 }
 
-func DefaultOpts() []runtime.ServeMuxOption {
+func DefaultServeMuxOpts() []runtime.ServeMuxOption {
 	return []runtime.ServeMuxOption{
 		runtime.WithErrorHandler(DefaultErrorHandler),
 		runtime.WithRoutingErrorHandler(DefaultRoutingErrorHandler),

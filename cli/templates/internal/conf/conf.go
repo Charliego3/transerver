@@ -10,7 +10,9 @@ var ProviderSet = wire.NewSet(
 )
 
 type Config struct {
-	Addr string
+	Environment configs.Environment `json:"environment,omitempty" yaml:"environment"`
+	Addr        string              `json:"addr,omitempty" yaml:"addr"`
+	Database    Database            `json:"database" yaml:"database"`
 }
 
 func NewBootstrap() any {
@@ -22,5 +24,5 @@ func (c Config) Address() string {
 }
 
 func (c Config) Env() configs.Environment {
-	return configs.DEV
+	return c.Environment
 }
