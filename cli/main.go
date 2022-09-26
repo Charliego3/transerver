@@ -28,12 +28,14 @@ type Config struct {
 	typ            int // actions index
 	modName        string
 	modPath        string
+	modURL         string
 	usingCfgOpt    bool
 	usingETCDOpt   bool
 	usingGRPCOpt   bool
 	hsOpt          int
 	usingLogOpt    bool
 	usingRedisOpts bool
+	services       []string
 }
 
 func main() {
@@ -52,10 +54,11 @@ func ActionsCallback(m list.Model) (string, bool) {
 	case 0: // Create Module
 		pg.AddModel(askModName)
 		pg.AddModel(askModPath)
+		pg.AddModel(askModURL)
+		pg.AddModel(selectHsOpts)
 		pg.AddModel(askCfgOpts)
 		pg.AddModel(askETCDOpts)
 		pg.AddModel(askGRPCOpts)
-		pg.AddModel(selectHsOpts)
 		pg.AddModel(askLoggerOpts)
 		pg.AddModel(askRedisOpts)
 		pg.AddModel(askAddService)
@@ -75,7 +78,19 @@ func ActionsCallback(m list.Model) (string, bool) {
 }
 
 func generate() IModel {
-	return nil
+	return NewGenerator(cfg, pg)
+}
+
+func askModURL() IModel {
+	return NewInput("What is mod init URL?",
+		WithPlaceholder(cfg.modName),
+		WithInputCallback(func(url string) (string, bool) {
+			if strutil.IsBlank(url) {
+				url = cfg.modName
+			}
+			cfg.modURL = url
+			return output("Mod init URL", cfg.modURL), false
+		}))
 }
 
 func askAddService() IModel {
@@ -91,6 +106,11 @@ func askAddService() IModel {
 func inputServiceNames() IModel {
 	return NewInput("Please enter service name", WithMulti(),
 		WithInputCallbacks(func(s []string) (string, bool) {
+			if len(s) == 0 {
+				cfg.services = []string{"Greeter"}
+			} else {
+				cfg.services = s
+			}
 			return output("Service names", "[%s]", strings.Join(s, ", ")), false
 		}))
 }
@@ -144,9 +164,13 @@ func askModName() IModel {
 		WithPlaceholder("please enter a module name"),
 		WithInputCallback(func(s string) (string, bool) {
 			if strutil.IsBlank(s) {
-				return exit("Not input anything for mod name..."), true
+				return Exit("Not input anything for mod name..."), true
 			}
 			cfg.modName = s
+
+			if cfg.modName == "g" {
+				_ = os.RemoveAll("g")
+			}
 			return output("Module name", cfg.modName), false
 		}))
 }
@@ -158,7 +182,7 @@ func askModPath() IModel {
 		WithInputCallback(func(path string) (string, bool) {
 			if strutil.IsBlank(path) {
 				if cfg.typ != 0 {
-					return exit("Please enter absolute path or module name"), true
+					return Exit("Please enter absolute path or module name"), true
 				}
 				cfg.modPath = filepath.Join(wd, cfg.modName)
 			} else {
@@ -175,9 +199,9 @@ func askModPath() IModel {
 
 			_, err := os.Stat(cfg.modPath)
 			if cfg.typ == 0 && err == nil {
-				return exit("Directory is already exits: [%s]", cfg.modPath), true
+				return Exit("Directory is already exits: [%s]", cfg.modPath), true
 			} else if cfg.typ > 0 && err != nil {
-				return exit("Directory is not exits: [%s]", cfg.modPath), true
+				return Exit("Directory is not exits: [%s]", cfg.modPath), true
 			}
 			return output("Directory path", cfg.modPath), false
 		}))
@@ -190,7 +214,7 @@ func askGRPCOpts() IModel {
 	})
 }
 
-func exit(format string, v ...any) string {
+func Exit(format string, v ...any) string {
 	return ExitErrStyle.Render(fmt.Sprintf(format+"\nexit status 1", v...))
 }
 

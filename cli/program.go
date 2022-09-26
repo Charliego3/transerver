@@ -1,11 +1,13 @@
 package main
 
 import (
-	"github.com/gookit/goutil/strutil"
+	"fmt"
 	"time"
 
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/gookit/goutil/strutil"
 )
 
 type IModel interface {
@@ -20,10 +22,11 @@ type Program struct {
 	current  IModel
 	quitting bool
 	done     bool
+	ch       chan string
 }
 
 func NewProgram(mfs ...func() IModel) *Program {
-	pg := &Program{models: mfs}
+	pg := &Program{models: mfs, ch: make(chan string)}
 	p := tea.NewProgram(pg)
 	pg.Program = p
 	return pg
@@ -33,11 +36,27 @@ func (pg *Program) AddModel(mfs ...func() IModel) {
 	pg.models = append(pg.models, mfs...)
 }
 
+func (pg *Program) Output(s string, v ...any) {
+	pg.ch <- fmt.Sprintf(s, v...)
+}
+
+func (pg *Program) NewLine() {
+	pg.Output(" ")
+}
+
 func (pg *Program) Start() {
 	if len(pg.models) == 0 {
 		println(ErrStyle.Render("No model specified!"))
 		return
 	}
+
+	go func() {
+		for s := range pg.ch {
+			if !strutil.IsEmpty(s) {
+				pg.Program.Println(LmarginStyle.Render(s))
+			}
+		}
+	}()
 
 	pg.Next()
 	err := pg.Program.Start()
@@ -46,8 +65,8 @@ func (pg *Program) Start() {
 	}
 }
 
-func (pg Program) Init() tea.Cmd {
-	return textinput.Blink
+func (pg *Program) Init() tea.Cmd {
+	return nil
 }
 
 func (pg *Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -55,6 +74,10 @@ func (pg *Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyCtrlC:
+			if _, ok := pg.current.(*Generator); ok {
+				return pg, nil
+			}
+
 			pg.quitting = true
 			return pg, tea.Quit
 
@@ -67,25 +90,32 @@ func (pg *Program) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 
-			content, exit := c.Callback(pg)
-			if strutil.IsNotBlank(content) {
-				go func() {
-					pg.Println(content)
-				}()
+			if _, ok := c.(*Generator); ok {
+				return pg, c.Update(msg)
 			}
+
+			content, exit := c.Callback(pg)
+			pg.ch <- content
 			pg.Next()
 			if _, ok := pg.current.(*empty); ok || exit {
 				time.Sleep(time.Millisecond)
 				pg.done = true
 				return pg, tea.Quit
 			}
-			return pg, nil
+
+			var cmd tea.Cmd
+			if _, ok := pg.current.(*Input); ok {
+				cmd = textinput.Blink
+			} else if _, ok := pg.current.(*Generator); ok {
+				cmd = spinner.Tick
+			}
+			return pg, cmd
 		}
 	}
 	return pg, pg.current.Update(msg)
 }
 
-func (pg Program) View() string {
+func (pg *Program) View() string {
 	if pg.done {
 		return "\n"
 	}
@@ -107,6 +137,6 @@ func (pg *Program) Next() {
 
 type empty struct{}
 
-func (empty) Update(tea.Msg) tea.Cmd           { return nil }
+func (empty) Update(tea.Msg) tea.Cmd           { return tea.Quit }
 func (empty) View() string                     { return "" }
 func (empty) Callback(*Program) (string, bool) { return "", true }

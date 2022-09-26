@@ -74,8 +74,7 @@ func (l *Select) Callback(pg *Program) (string, bool) {
 	if l.callback == nil {
 		return "", false
 	}
-	content, exit := l.callback(l.Model)
-	return content, exit
+	return l.callback(l.Model)
 }
 
 type SelectItem string
