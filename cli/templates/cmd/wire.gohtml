@@ -7,11 +7,15 @@ import (
 	"github.com/google/wire"
 	"github.com/transerver/commons"
 	"github.com/transerver/commons/configs"
-{{/*	"github.com/transerver/commons/etcds"*/}}
+{{- if .UsingETCD }}
+	"github.com/transerver/commons/etcds"
+{{- end }}
 	"github.com/transerver/commons/gs"
 	"github.com/transerver/commons/hs"
 	"github.com/transerver/commons/logger"
-{{/*	"github.com/transerver/commons/redis"*/}}
+{{- if .UsingRedis }}
+	"github.com/transerver/commons/redis"
+{{- end }}
 )
 
 func wireApp() (*commons.App, func(), error) {
@@ -22,11 +26,13 @@ func wireApp() (*commons.App, func(), error) {
 		{{- else }}
 		configs.ParseWithoutOpts,
 		{{- end }}
-{{/*		{{- if .UsingETCDOpt }}*/}}
-{{/*		etcds.NewClient,*/}}
-{{/*		{{- else }}*/}}
-{{/*		etcds.NewClientWithoutOpts,*/}}
-{{/*		{{- end }}*/}}
+		{{- if .UsingETCD }}
+			{{- if .UsingETCDOpt }}
+				etcds.NewClient,
+			{{- else }}
+				etcds.NewClientWithoutOpts,
+			{{- end }}
+		{{- end }}
 		{{- if .UsingGRPCOpt }}
 		gs.NewGRPCServer,
 		{{- else }}
@@ -44,11 +50,13 @@ func wireApp() (*commons.App, func(), error) {
 		{{- else }}
 		logger.NewLoggerWithoutWriter,
 		{{- end }}
-{{/*		{{- if .UsingRedisOpt }}*/}}
-{{/*		redis.NewClient,*/}}
-{{/*		{{- else }}*/}}
-{{/*		redis.NewClientWithoutOpts,*/}}
-{{/*		{{- end }}*/}}
+		{{- if .UsingRedis }}
+			{{- if .UsingRedisOpt }}
+				redis.NewClient,
+			{{- else }}
+				redis.NewClientWithoutOpts,
+			{{- end }}
+		{{- end }}
 		providerSet,
 	)
 	return nil, nil, nil

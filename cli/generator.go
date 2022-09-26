@@ -52,9 +52,8 @@ func (g *Generator) genBizs() {
 	g.maker.Template(filepath.Join(g.cmdPath, "main.go"), "main.gohtml", g.cfg)
 	g.maker.Template(filepath.Join(g.cmdPath, "wire.go"), "wire.gohtml", g.cfg)
 	g.maker.Template(filepath.Join(g.bizPath, "biz.go"), "biz.gohtml", g.cfg)
-	g.maker.Template(filepath.Join(g.confPath, "conf.go"), "conf.go", nil)
+	g.maker.Template(filepath.Join(g.confPath, "conf.go"), "conf.gohtml", nil)
 	g.maker.Template(filepath.Join(g.confPath, "config.yaml"), "config.yaml", nil)
-	g.maker.Template(filepath.Join(g.confPath, "database.go"), "database.go", nil)
 	g.maker.Template(filepath.Join(g.dataPath, "data.go"), "data.gohtml", g.cfg)
 	g.maker.Template(filepath.Join(g.servicePath, "service.go"), "service.gohtml", g.cfg)
 }

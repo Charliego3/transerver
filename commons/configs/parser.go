@@ -2,63 +2,75 @@ package configs
 
 import (
 	"fmt"
-
-	cv2 "github.com/gookit/config/v2"
-	"github.com/gookit/config/v2/yamlv3"
-	"github.com/gookit/goutil/strutil"
+	"gopkg.in/yaml.v3"
+	"io"
+	"os"
 )
 
 type Config struct {
 	paths  []string
 	source []byte
-	err    error // error with load conetnt, fail fast
+	reader io.ReadCloser
+	err    error // error with load content, fail fast
 }
 
-func (c *Config) Load(source any) {
-	if c.err != nil {
+func (c *Config) unmarshal(buf []byte, target any) {
+	if c.err != nil || len(buf) == 0 {
 		return
 	}
 
-	switch v := source.(type) {
-	case []byte:
-		if len(v) == 0 {
-			return
-		}
-		c.err = cv2.LoadSources(cv2.Yaml, v)
-	case []string:
-		if len(v) == 0 {
-			return
-		}
-		for _, path := range v {
-			c.Load(path)
-		}
-	case string:
-		if strutil.IsBlank(v) {
-			return
-		}
-		c.err = cv2.LoadFiles(v)
-	}
+	c.err = yaml.Unmarshal(buf, target)
 }
 
-func (c *Config) Bind(v any) {
+func (c *Config) readFile(pidx int) ([]byte, bool) {
+	if c.err != nil || len(c.paths)-1 > pidx {
+		return nil, false
+	}
+
+	var buf []byte
+	buf, c.err = os.ReadFile(c.paths[pidx])
 	if c.err != nil {
-		return
+		return nil, false
 	}
-	c.err = cv2.BindStruct("", &v)
+	return buf, true
 }
 
-func ParseWithoutOpts(bootstrap any) (Bootstrap, error) {
+func (c *Config) readReader() []byte {
+	if c.err != nil || c.reader == nil {
+		return nil
+	}
+
+	var buf []byte
+	for {
+		tmp := make([]byte, 1024)
+		_, err := c.reader.Read(tmp)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return nil
+		}
+		buf = append(buf, tmp...)
+	}
+	return buf
+}
+
+func ParseWithoutOpts(bootstrap any) (IConfig, error) {
 	return Parse(bootstrap)
 }
 
-// Parse bind cofnig source to Bootstrap instance
-// bootstrap must be implement Bootstrap interface
+// Parse bind config source to IConfig instance
+// bootstrap must be implemented IConfig interface
 // 1: load from etcd
 // 2: load from source option
 // 3: load from yaml file
-func Parse(bootstrap any, opts ...Option) (Bootstrap, error) {
+func Parse(bootstrap any, opts ...Option) (IConfig, error) {
 	if bootstrap == nil {
-		return nil, fmt.Errorf("config.Bootstrap target is nil")
+		return nil, fmt.Errorf("config.IConfig target is nil")
+	}
+
+	if _, ok := bootstrap.(IConfig); !ok {
+		return nil, fmt.Errorf("bootstrap does not implemented configs.IConfig")
 	}
 
 	cfg := &Config{}
@@ -66,10 +78,12 @@ func Parse(bootstrap any, opts ...Option) (Bootstrap, error) {
 		opt(cfg)
 	}
 
-	cv2.AddDriver(yamlv3.Driver)
-	cfg.Load([]byte("")) // from etcd
-	cfg.Load(cfg.source)
-	cfg.Load(cfg.paths)
-	cfg.Bind(&bootstrap)
-	return bootstrap.(Bootstrap), cfg.err
+	cfg.unmarshal(cfg.source, bootstrap)
+	cfg.unmarshal(cfg.readReader(), bootstrap)
+	for i := range cfg.paths {
+		if buf, ok := cfg.readFile(i); ok {
+			cfg.unmarshal(buf, bootstrap)
+		}
+	}
+	return bootstrap.(IConfig), cfg.err
 }

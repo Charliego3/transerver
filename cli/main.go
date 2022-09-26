@@ -30,10 +30,12 @@ type Config struct {
 	ModURL           string
 	ModName          string
 	UsingCfgOpt      bool
+	UsingETCD        bool
 	UsingETCDOpt     bool
 	UsingGRPCOpt     bool
 	HsOpt            int
 	UsingLogOpt      bool
+	UsingRedis       bool
 	UsingRedisOpt    bool
 	Services         []string
 	CurrService      string
@@ -59,10 +61,10 @@ func ActionsCallback(m list.Model) (string, bool) {
 		pg.AddModel(askModURL)
 		pg.AddModel(selectHsOpts)
 		pg.AddModel(askCfgOpts)
-		pg.AddModel(askETCDOpts)
+		// pg.AddModel(askETCDOpts)
 		pg.AddModel(askGRPCOpts)
 		pg.AddModel(askLoggerOpts)
-		pg.AddModel(askRedisOpts)
+		// pg.AddModel(askRedisOpts)
 		pg.AddModel(askAddService)
 	case 1: // Add Service
 		pg.AddModel(askModPath)

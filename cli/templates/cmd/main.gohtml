@@ -69,7 +69,9 @@ func main() {
 {{- if .UsingCfgOpt }}
 
 func NewCfgOpts() []configs.Option {
-	return []configs.Option{}
+	return []configs.Option{
+		configs.WithPath("internal/conf/config.yaml"),
+	}
 }
 {{- end }}
 {{- if .UsingETCDOpt }}
