@@ -19,7 +19,7 @@ var (
 	QuitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 2).Bold(true).Foreground(lipgloss.Color("#006400"))
 	ErrStyle          = lipgloss.NewStyle().Margin(1, 0, 1, 2).Bold(true).Underline(true).Foreground(lipgloss.Color("#B22222"))
 	CursorStyle       = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("#228B22"))
-	ExitErrStyle      = ErrStyle.Copy().UnsetMargins().Margin(1, 0, 0, 0)
+	ExitErrStyle      = ErrStyle.Copy().UnsetMargins().MarginTop(1)
 
 	SpinnerStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.AdaptiveColor{
 		Light: "#4F4F4F",

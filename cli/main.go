@@ -68,7 +68,7 @@ func ActionsCallback(m list.Model) (string, bool) {
 		pg.AddModel(askAddService)
 	case 1: // Add Service
 		pg.AddModel(askModPath)
-		pg.AddModel(askAddService)
+		pg.AddModel(inputServiceNames)
 		pg.AddModel(generate)
 	case 2: // Remove Module
 		pg.AddModel(askModPath)
