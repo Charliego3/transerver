@@ -166,7 +166,10 @@ func (g *Generator) removeService() {
 		g.maker.RemoveAll(filepath.Join(g.bizPath, fileName))
 		g.maker.RemoveAll(filepath.Join(g.dataPath, fileName))
 		g.maker.RemoveAll(filepath.Join(g.servicePath, fileName))
+		g.maker.RemoveAll(filepath.Join(g.entPath, "schema", fileName))
 	}
+	g.maker.Chdir(g.entPath)
+	g.maker.Cmd("go run entgo.io/ent/cmd/ent generate ./schema")
 }
 
 func (g *Generator) revertService() {

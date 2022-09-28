@@ -17,6 +17,6 @@ type Data struct {
 	logger *zap.Logger
 }
 
-func NewData(bootstrap configs.Bootstrap, logger *zap.Logger) (*Data, func(), error) {
+func NewData(bootstrap configs.IConfig, logger *zap.Logger) (*Data, func(), error) {
 	return &Data{logger: logger}, func() {}, nil
 }

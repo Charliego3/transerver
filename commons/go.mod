@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
+	github.com/gookit/goutil v0.5.12
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/soheilhy/cmux v0.1.5
 	go.etcd.io/etcd/client/v3 v3.5.5

@@ -141,7 +141,7 @@ func (m *Maker) RevertService(path, key, name string, kind ast.ObjKind) {
 			return
 		}
 
-		var idx int
+		idx := -1
 		var r token.Pos
 		for i, arg := range expr.Args {
 			service := arg.(*ast.Ident)
@@ -150,6 +150,10 @@ func (m *Maker) RevertService(path, key, name string, kind ast.ObjKind) {
 				r = arg.End()
 				break
 			}
+		}
+
+		if idx < 0 {
+			return
 		}
 
 		if idx == 0 {
@@ -165,12 +169,16 @@ func (m *Maker) RevertService(path, key, name string, kind ast.ObjKind) {
 			return
 		}
 
-		var idx int
+		idx := -1
 		for i, p := range d.Type.Params.List {
 			if p.Type.(*ast.StarExpr).X.(*ast.Ident).Name == name {
 				idx = i
 				break
 			}
+		}
+
+		if idx < 0 {
+			return
 		}
 
 		writeParams := func(idx int, fs []*ast.Field) {
@@ -234,12 +242,7 @@ func (m *Maker) MergeService(path, key string, kind ast.ObjKind, insert func(int
 	}
 
 	m.parse(path, key, kind, func(src []byte, buf *bytes.Buffer, expr *ast.CallExpr) {
-		l := len(expr.Args)
-		if l == 0 {
-			return
-		}
-
-		params, _, err := insert(l)
+		params, _, err := insert(len(expr.Args))
 		if err != nil {
 			m.err = err
 			return
@@ -267,13 +270,8 @@ func (m *Maker) MergeService(path, key string, kind ast.ObjKind, insert func(int
 		buf.Write(src[idx:])
 	}, func(src []byte, buf *bytes.Buffer, d *ast.FuncDecl) {
 		params := d.Type.Params
-		l := len(params.List)
-		if l == 0 {
-			return
-		}
-
 		body := d.Body.List[0].(*ast.ReturnStmt).Results[0].(*ast.CompositeLit)
-		ps, rs, err := insert(l)
+		ps, rs, err := insert(len(params.List))
 		if err != nil {
 			m.err = err
 			return
