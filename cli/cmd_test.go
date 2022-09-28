@@ -1,14 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"go/ast"
-	"go/parser"
 	"go/token"
-	"os"
 	"testing"
 )
 
@@ -54,47 +53,22 @@ func TestPrintln(t *testing.T) {
 
 func TestParser(t *testing.T) {
 	bizf := "/Users/charlie/dev/go/transerver/g/internal/service/service.go"
-	src, err := os.ReadFile(bizf)
-	if err != nil {
-		return
-	}
-
-	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, "", src, parser.DeclarationErrors)
-	if err != nil {
-		return
-	}
-
-	for k, obj := range f.Scope.Objects {
-		if k != "ProviderSet" {
-			continue
-		}
-
-		if obj.Kind != ast.Var {
-			continue
-		}
-
-		decl, ok := obj.Decl.(*ast.ValueSpec)
-		if !ok {
-			continue
-		}
-
-		for _, v := range decl.Values {
-			ce, ok := v.(*ast.CallExpr)
-			if !ok {
-				continue
+	maker := NewMaker(nil)
+	maker.parse(bizf, "ProviderSet", ast.Var, func(src []byte, buf *bytes.Buffer, expr *ast.CallExpr) {
+		args := expr.Args
+		for i, arg := range args {
+			ident := arg.(*ast.Ident)
+			var start, end token.Pos
+			end = arg.End()
+			if i > 0 {
+				start = args[i-1].End()
+				if i < len(args)-1 {
+					end = args[i+1].Pos()
+				}
+			} else {
+				start = arg.Pos()
 			}
-
-			se, ok := ce.Fun.(*ast.SelectorExpr)
-			if !ok {
-				continue
-			}
-
-			if se.X.(*ast.Ident).Name != "wire" && se.Sel.Name != "NewSet" {
-				continue
-			}
-
-			t.Logf("ProviderSet: %v", ce.Args[0].Pos())
+			t.Logf("Service: %s(%d-%d)", ident.Name, start, end)
 		}
-	}
+	}, nil)
 }

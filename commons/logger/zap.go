@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"github.com/transerver/commons/configs"
 	"io"
 	"os"
 
@@ -8,19 +9,19 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// NewLoggerWithoutWriter retuns logger with io.Discard
-func NewLoggerWithoutWriter() (*zap.Logger, func()) {
-	return NewLogger(io.Discard)
+// NewLoggerWithoutWriter returns logger with io.Discard
+func NewLoggerWithoutWriter(boot configs.IConfig) (*zap.Logger, func()) {
+	return NewLogger(boot, io.Discard)
 }
 
 // NewLogger returns logger...
-func NewLogger(w io.Writer) (*zap.Logger, func()) {
+func NewLogger(boot configs.IConfig, w io.Writer) (*zap.Logger, func()) {
 	var core zapcore.Core
 	cfg := zap.NewProductionEncoderConfig()
 	cfg.FunctionKey = "F"
 	cfg.EncodeTime = zapcore.RFC3339TimeEncoder
 	cfg.EncodeDuration = zapcore.StringDurationEncoder
-	if w == nil || w == io.Discard {
+	if boot.Env() == configs.DEV {
 		cfg.EncodeCaller = zapcore.FullCallerEncoder
 		cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 		cfg.EncodeName = zapcore.FullNameEncoder

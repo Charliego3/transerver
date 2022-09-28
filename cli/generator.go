@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
@@ -97,6 +96,14 @@ func (g *Generator) createModule() {
 		g.maker.Cmd("go work sync")
 	}
 	g.genEnt()
+	g.genWire()
+}
+
+func (g *Generator) genWire() {
+	if g.err != nil {
+		return
+	}
+
 	g.maker.Chdir(g.cmdPath)
 	g.maker.Cmd("go get -u github.com/google/wire")
 	g.maker.Cmd("go run github.com/google/wire/cmd/wire ./...")
@@ -119,34 +126,60 @@ func (g *Generator) usingWork() bool {
 	return err == nil
 }
 
-func (g *Generator) addService(suffix string) func(int) ([]byte, []byte, error) {
-	return func(int) ([]byte, []byte, error) {
-		var buf bytes.Buffer
+func (g *Generator) addService(suffix string) func(int) ([]string, []string, error) {
+	return func(int) ([]string, []string, error) {
+		var services []string
 		for _, s := range g.cfg.Services {
-			buf.WriteString(",\n\tNew" + s + suffix)
+			services = append(services, "New"+s+suffix)
 		}
-		return buf.Bytes(), nil, nil
+		return services, nil, nil
 	}
 }
 
 func (g *Generator) margeService() {
+	if g.err != nil {
+		return
+	}
+
 	spath := filepath.Join(g.servicePath, "service.go")
 	g.maker.MergeService(filepath.Join(g.bizPath, "biz.go"), "ProviderSet", ast.Var, g.addService("Usecase"))
 	g.maker.MergeService(filepath.Join(g.dataPath, "data.go"), "ProviderSet", ast.Var, g.addService("Repo"))
 	g.maker.MergeService(spath, "ProviderSet", ast.Var, g.addService("Service"))
-	g.maker.MergeService(spath, "MakeServices", ast.Fun, func(count int) ([]byte, []byte, error) {
-		var p, r bytes.Buffer
+	g.maker.MergeService(spath, "MakeServices", ast.Fun, func(count int) ([]string, []string, error) {
+		var ps, rs []string
 		for _, s := range g.cfg.Services {
-			p.WriteString(",\n\ts" + strconv.Itoa(count) + " *" + s + "Service")
-			r.WriteString(",\n\t\ts" + strconv.Itoa(count))
+			ps = append(ps, "s"+strconv.Itoa(count)+" *"+s+"Service")
+			rs = append(rs, "s"+strconv.Itoa(count))
 			count++
 		}
-		return p.Bytes(), r.Bytes(), nil
+		return ps, rs, nil
 	})
 }
 
-func (g *Generator) revertService() {
+func (g *Generator) removeService() {
+	if g.err != nil {
+		return
+	}
 
+	for _, s := range g.cfg.Services {
+		fileName := strings.ToLower(s) + ".go"
+		g.maker.RemoveAll(filepath.Join(g.bizPath, fileName))
+		g.maker.RemoveAll(filepath.Join(g.dataPath, fileName))
+		g.maker.RemoveAll(filepath.Join(g.servicePath, fileName))
+	}
+}
+
+func (g *Generator) revertService() {
+	if g.err != nil {
+		return
+	}
+
+	for _, s := range g.cfg.Services {
+		g.maker.RevertService(filepath.Join(g.bizPath, "biz.go"), "ProviderSet", "New"+s+"Usecase", ast.Var)
+		g.maker.RevertService(filepath.Join(g.dataPath, "data.go"), "ProviderSet", "New"+s+"Repo", ast.Var)
+		g.maker.RevertService(filepath.Join(g.servicePath, "service.go"), "ProviderSet", "New"+s+"Service", ast.Var)
+		g.maker.RevertService(filepath.Join(g.servicePath, "service.go"), "MakeServices", s+"Service", ast.Fun)
+	}
 }
 
 func (g *Generator) revertWork() {
@@ -192,12 +225,14 @@ func (g *Generator) gen() {
 		g.genEnt()
 		g.genServices()
 		g.margeService()
+		g.genWire()
 	case 2: // Remove Module
 		// remove dir // TODO
 		g.revertWork() // TODO
 	case 3: // Remove Service
-		// remove service // TODO
+		g.removeService()
 		g.revertService() // TODO
+		g.genWire()
 	}
 
 	if g.err == nil {
@@ -210,6 +245,8 @@ func (g *Generator) gen() {
 			msg = "\x1b[1A" + msg
 		}
 		g.pg.Output(msg)
+	} else if g.cfg.typ != 2 {
+		g.pg.Output("\x1b[1A\x1b[1A")
 	}
 
 	g.done = true

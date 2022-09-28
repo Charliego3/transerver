@@ -1,10 +1,12 @@
 package configs
 
-type Environment uint
+import "github.com/gookit/goutil/strutil"
+
+type Environment string
 
 const (
-	DEV Environment = iota + 1
-	PROD
+	DEV  Environment = "dev"
+	PROD Environment = "prod"
 )
 
 type IConfig interface {
@@ -24,6 +26,9 @@ func (b Bootstrap) Addr() string {
 }
 
 func (b Bootstrap) Env() Environment {
+	if strutil.IsBlank(string(b.Environment)) {
+		return PROD
+	}
 	return b.Environment
 }
 
