@@ -1,0 +1,9 @@
+environment: dev
+addr: ":9090"
+database:
+  dsn: ""
+  options:
+    maxOpenConns: 1
+    maxIdleConns: 2
+    maxIdleTime: 30m
+    maxLifetime: 1h

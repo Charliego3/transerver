@@ -13,6 +13,13 @@ func NewHTTPServerWithoutOpts(
 	return NewHTTPServerWithOptions(services, nil)
 }
 
+func NewHTTPServerWithoutHandlers(
+	services []commons.Service,
+	muxOpts ...runtime.ServeMuxOption,
+) (*http.Server, error) {
+	return NewHTTPServerWithOptions(services, nil, muxOpts...)
+}
+
 func NewHTTPServerWithoutMuxOpts(
 	services []commons.Service,
 	handlers []Handler,

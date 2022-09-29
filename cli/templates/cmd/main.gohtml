@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/google/wire"
-{{- if eq .HsOpt 0 }}
+{{- if or (eq .HsOpt 0) (eq .HsOpt 2) }}
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 {{- end }}
 {{- if .UsingCfgOpt }}
@@ -11,7 +11,7 @@ import (
 {{- if .UsingETCDOpt }}
 	"github.com/transerver/commons/etcds"
 {{- end }}
-{{- if le .HsOpt 1 }}
+{{- if le .HsOpt 2 }}
 	"github.com/transerver/commons/hs"
 {{- end }}
 {{- if .UsingRedisOpt }}
@@ -39,7 +39,7 @@ var providerSet = wire.NewSet(
 {{- if $.UsingGRPCOpt }}
     NewGRPCOpts,
 {{- end }}
-{{- if eq .HsOpt 0 }}
+{{- if or (eq .HsOpt 0) (eq .HsOpt 2) }}
     NewHTTPServeMuxOpts,
 {{- end }}
 {{- if le .HsOpt 1 }}
@@ -86,7 +86,7 @@ func NewGRPCOpts() []grpc.ServerOption {
 	return []grpc.ServerOption{}
 }
 {{- end }}
-{{- if eq .HsOpt 0 }}
+{{- if or (eq .HsOpt 0) (eq .HsOpt 2) }}
 
 func NewHTTPServeMuxOpts() []runtime.ServeMuxOption {
 	return hs.DefaultServeMuxOpts()

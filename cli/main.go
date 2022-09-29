@@ -137,6 +137,7 @@ func selectHsOpts() IModel {
 	items := []list.Item{
 		SelectItem("Using full options"),
 		SelectItem("Without ServeMuxOption but using handlers"),
+		SelectItem("Without handlers but using ServeMuxOption"),
 		SelectItem("Without any options"),
 	}
 	return NewSelect(items,

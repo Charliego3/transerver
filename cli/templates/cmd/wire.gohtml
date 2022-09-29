@@ -21,42 +21,44 @@ import (
 func wireApp() (*commons.App, func(), error) {
 	wire.Build(
 		commons.NewApp,
-		{{- if .UsingCfgOpt }}
+	{{- if .UsingCfgOpt }}
 		configs.Parse,
-		{{- else }}
+	{{- else }}
 		configs.ParseWithoutOpts,
-		{{- end }}
-		{{- if .UsingETCD }}
-			{{- if .UsingETCDOpt }}
-				etcds.NewClient,
-			{{- else }}
-				etcds.NewClientWithoutOpts,
-			{{- end }}
-		{{- end }}
-		{{- if .UsingGRPCOpt }}
+	{{- end }}
+{{- if .UsingETCD }}
+	{{- if .UsingETCDOpt }}
+		etcds.NewClient,
+	{{- else }}
+		etcds.NewClientWithoutOpts,
+	{{- end }}
+{{- end }}
+	{{- if .UsingGRPCOpt }}
 		gs.NewGRPCServer,
-		{{- else }}
+	{{- else }}
 		gs.NewGRPCServerWithoutOpts,
-		{{- end }}
-		{{- if eq .HsOpt 0 }}
+	{{- end }}
+	{{- if eq .HsOpt 0 }}
 		hs.NewHTTPServerWithOptions,
-		{{- else if eq .HsOpt 1 }}
+	{{- else if eq .HsOpt 1 }}
 		hs.NewHTTPServerWithoutMuxOpts,
-		{{- else }}
+	{{- else if eq .HsOpt 2 }}
+		hs.NewHTTPServerWithoutHandlers,
+	{{- else }}
 		hs.NewHTTPServerWithoutOpts,
-		{{- end }}
-		{{- if .UsingLogOpt }}
+	{{- end }}
+	{{- if .UsingLogOpt }}
 		logger.NewLogger,
-		{{- else }}
+	{{- else }}
 		logger.NewLoggerWithoutWriter,
-		{{- end }}
-		{{- if .UsingRedis }}
-			{{- if .UsingRedisOpt }}
-				redis.NewClient,
-			{{- else }}
-				redis.NewClientWithoutOpts,
-			{{- end }}
-		{{- end }}
+	{{- end }}
+{{- if .UsingRedis }}
+	{{- if .UsingRedisOpt }}
+		redis.NewClient,
+	{{- else }}
+		redis.NewClientWithoutOpts,
+	{{- end }}
+{{- end }}
 		providerSet,
 	)
 	return nil, nil, nil
