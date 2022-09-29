@@ -56,7 +56,7 @@ func (m *Maker) RemoveAll(path string) {
 	m.out = true
 	m.err = os.RemoveAll(path)
 	if m.err == nil {
-		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m remove \x1b[1;34m[%s]\x1b[0m", m.dur(time.Since(before)), path)
+		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m remove \x1b[1;34m[%s]\x1b[0m", dur(time.Since(before)), path)
 	}
 }
 
@@ -120,7 +120,7 @@ func (m *Maker) parse(
 			m.err = os.WriteFile(path, buf.Bytes(), 0744)
 		} else {
 			m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m can't find service with file \x1b[1;34m[%s]\x1b[0m, will be skip.",
-				m.dur(time.Since(before)), path)
+				dur(time.Since(before)), path)
 		}
 	}
 }
@@ -225,7 +225,7 @@ func (m *Maker) RevertService(path, key, name string, kind ast.ObjKind) {
 	})
 
 	if _, ok := repeats[path]; m.err == nil && !ok {
-		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m remove service from \x1b[1;34m[%s]\x1b[0m", m.dur(time.Since(before)), path)
+		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m remove service from \x1b[1;34m[%s]\x1b[0m", dur(time.Since(before)), path)
 		repeats[path] = struct{}{}
 	}
 }
@@ -314,7 +314,7 @@ func (m *Maker) MergeService(path, key string, kind ast.ObjKind, insert func(int
 	})
 
 	if _, ok := repeats[path]; m.err == nil && !ok {
-		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m merge service to \x1b[1;34m[%s]\x1b[0m", m.dur(time.Since(before)), path)
+		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m merge service to \x1b[1;34m[%s]\x1b[0m", dur(time.Since(before)), path)
 		repeats[path] = struct{}{}
 	}
 }
@@ -357,7 +357,7 @@ func (m *Maker) Cmd(command string, args ...string) {
 		return
 	}
 
-	m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m %s\x1b[1;4;36m%s\x1b[0m ⏎ ", m.dur(time.Since(before)), lipb, command)
+	m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m %s\x1b[1;4;36m%s\x1b[0m ⏎ ", dur(time.Since(before)), lipb, command)
 	m.pg.Output(string(buf))
 }
 
@@ -378,7 +378,7 @@ func (m *Maker) Template(path, name string, v any) {
 	if m.err != nil {
 		return
 	}
-	m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m generate go file \x1b[1;34m[%s]\x1b[0m", m.dur(time.Since(before)), path)
+	m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m generate go file \x1b[1;34m[%s]\x1b[0m", dur(time.Since(before)), path)
 }
 
 func (m *Maker) MKDir(path string) {
@@ -391,11 +391,11 @@ func (m *Maker) MKDir(path string) {
 	before := time.Now()
 	m.err = os.MkdirAll(path, 0744)
 	if m.err == nil {
-		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m create directory \x1b[1;32m[%s]\x1b[0m", m.dur(time.Since(before)), path)
+		m.pg.Output("\x1b[1A\x1b[1;33m[%10s]\x1b[0m create directory \x1b[1;32m[%s]\x1b[0m", dur(time.Since(before)), path)
 	}
 }
 
-func (m *Maker) dur(d time.Duration) string {
+func dur(d time.Duration) string {
 	ds := d.String()
 	if len(ds) > timeLength {
 		if strings.HasSuffix(ds, "µs") || strings.HasSuffix(ds, "ms") {

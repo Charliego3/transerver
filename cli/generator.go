@@ -2,15 +2,18 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/gookit/goutil/strutil"
 	"go/ast"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Generator struct {
@@ -186,7 +189,43 @@ func (g *Generator) revertService() {
 }
 
 func (g *Generator) revertWork() {
+	if g.err != nil || !g.usingWork() {
+		return
+	}
 
+	workPath := filepath.Join(filepath.Dir(g.cfg.modPath), "go.work")
+	g.pg.Output("\x1b[1;33m[\x1b[1;5;33m%s\x1b[0m\x1b[1;33m]\x1b[0m remove module from \x1b[1;4;34m[%s]\x1b[0m", placeholder, workPath)
+	before := time.Now()
+	var f []byte
+	f, g.err = os.ReadFile(workPath)
+	if g.err != nil {
+		return
+	}
+	reader := bufio.NewReader(bytes.NewReader(f))
+	var buffer bytes.Buffer
+	for {
+		buf, _, err := reader.ReadLine()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return
+		}
+
+		line := string(buf)
+		if !strings.HasSuffix(line, filepath.Base(g.cfg.modPath)) {
+			buffer.Write(buf)
+			buffer.WriteString("\n")
+		}
+	}
+
+	if buffer.Len() > 0 {
+		g.err = os.WriteFile(workPath, buffer.Bytes(), 0744)
+		if g.err == nil {
+			g.pg.Output("\x1b[1A\x1b[1;33m[\x1b[1;33m%10s\x1b[0m\x1b[1;33m]\x1b[0m remove module from \x1b[1;34m[%s]\x1b[0m",
+				dur(time.Since(before)), workPath)
+		}
+	}
 }
 
 func (g *Generator) restoreModURL() {
@@ -230,11 +269,11 @@ func (g *Generator) gen() {
 		g.margeService()
 		g.genWire()
 	case 2: // Remove Module
-		// remove dir // TODO
-		g.revertWork() // TODO
+		g.maker.RemoveAll(g.cfg.modPath)
+		g.revertWork()
 	case 3: // Remove Service
 		g.removeService()
-		g.revertService() // TODO
+		g.revertService()
 		g.genWire()
 	}
 
