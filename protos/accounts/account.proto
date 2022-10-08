@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package accountpb;
+option go_package = "github.com/transerver/protos/acctspb";
+
+import "google/api/annotations.proto";
+
+service AccountService {
+  rpc Register(RegisterRequest) returns (RegisterReply) {
+    option (google.api.http) = {
+      post: "/user/v1/register"
+      body: "*"
+    };
+  }
+
+  rpc Login(LoginRequest) returns (LoginReply) {
+    option (google.api.http) = {
+      post: "/user/v1/login"
+      body: "*"
+    };
+  }
+}
+
+message RegisterRequest {
+
+}
+
+message RegisterReply {
+
+}
+
+message LoginRequest {
+
+}
+
+message LoginReply {
+
+}
