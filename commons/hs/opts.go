@@ -2,6 +2,7 @@ package hs
 
 import (
 	"context"
+	"google.golang.org/grpc/status"
 	"io"
 	"net/http"
 	"net/textproto"
@@ -16,7 +17,7 @@ import (
 func DefaultErrorHandler(
 	ctx context.Context,
 	mux *runtime.ServeMux,
-	marshaler runtime.Marshaler,
+	marshaller runtime.Marshaler,
 	w http.ResponseWriter,
 	r *http.Request,
 	err error,
@@ -25,7 +26,12 @@ func DefaultErrorHandler(
 	const fallback = `{"code": 13, "message": "failed to marshal error message"}`
 
 	var rtn utils.ResponseEntity
-	if v, ok := err.(utils.ResponseEntity); !ok {
+
+	if r, ok := err.(interface {
+		GRPCStatus() *status.Status
+	}); ok {
+		rtn = utils.NewErrResponse(r.GRPCStatus().Code(), r.GRPCStatus().Message())
+	} else if v, ok := err.(utils.ResponseEntity); !ok {
 		rtn = utils.NewErrResponse(codes.Unknown, err.Error())
 	} else {
 		rtn = v
@@ -34,16 +40,16 @@ func DefaultErrorHandler(
 	w.Header().Del("Trailer")
 	w.Header().Del("Transfer-Encoding")
 
-	contentType := marshaler.ContentType(rtn)
+	contentType := marshaller.ContentType(rtn)
 	w.Header().Set("Content-Type", contentType)
 
 	if rtn.Code() == codes.Unauthenticated {
 		w.Header().Set("WWW-Authenticate", rtn.Error())
 	}
 
-	buf, merr := marshaler.Marshal(rtn)
-	if merr != nil {
-		grpclog.Infof("Failed to marshal error message %v: %v", rtn, merr)
+	buf, mer := marshaller.Marshal(rtn)
+	if mer != nil {
+		grpclog.Infof("Failed to marshal error message %v: %v", rtn, mer)
 		w.WriteHeader(http.StatusInternalServerError)
 		if _, err := io.WriteString(w, fallback); err != nil {
 			grpclog.Infof("Failed to write response: %v", err)
@@ -89,7 +95,7 @@ func DefaultErrorHandler(
 }
 
 // DefaultRoutingErrorHandler is our default handler for routing errors.
-// By default http error codes mapped on the following error codes:
+// By default, http error codes mapped on the following error codes:
 //
 //	NotFound -> grpc.NotFound
 //	StatusBadRequest -> grpc.InvalidArgument
@@ -98,7 +104,7 @@ func DefaultErrorHandler(
 func DefaultRoutingErrorHandler(
 	ctx context.Context,
 	mux *runtime.ServeMux,
-	marshaler runtime.Marshaler,
+	marshaller runtime.Marshaler,
 	w http.ResponseWriter,
 	r *http.Request,
 	httpStatus int,
@@ -112,5 +118,5 @@ func DefaultRoutingErrorHandler(
 	case http.StatusNotFound:
 		sterr = utils.NewErrResponse(codes.NotFound, http.StatusText(httpStatus))
 	}
-	runtime.HTTPError(ctx, mux, marshaler, w, r, sterr)
+	runtime.HTTPError(ctx, mux, marshaller, w, r, sterr)
 }

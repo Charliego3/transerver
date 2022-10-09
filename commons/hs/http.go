@@ -32,7 +32,8 @@ func NewHTTPServerWithOptions(
 	handlers []Handler,
 	muxOpts ...runtime.ServeMuxOption,
 ) (*http.Server, error) {
-	muxOpts = append(muxOpts, runtime.WithMarshalerOption("application/json", NewJSONMarshaler()))
+	muxOpts = append(muxOpts, runtime.WithMarshalerOption("application/json", NewJSONMarshaller()))
+	muxOpts = append(muxOpts, runtime.WithMarshalerOption("application/json+pretty", NewJSONMarshaller(true)))
 	mux := runtime.NewServeMux(muxOpts...)
 	for _, handler := range handlers {
 		if err := mux.HandlePath(handler.Method, handler.Path, handler.route); err != nil {

@@ -1,24 +1,27 @@
 package hs
 
 import (
-	"encoding/json"
-
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/utils"
 	"google.golang.org/genproto/googleapis/api/httpbody"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
-type JSONMarshaler struct {
+type JSONMarshaller struct {
 	*runtime.HTTPBodyMarshaler
+	pretty bool
 }
 
-func (h *JSONMarshaler) ContentType(v interface{}) string {
+func (h *JSONMarshaller) ContentType(v interface{}) string {
+	if h.pretty {
+		return "application/json+pretty"
+	}
 	return "application/json"
 }
 
-// Marshal marshals "v" by returning the body bytes if v is a
-// google.api.HttpBody message, otherwise it falls back to the default Marshaler.
-func (h *JSONMarshaler) Marshal(v interface{}) ([]byte, error) {
+func (h *JSONMarshaller) Marshal(v interface{}) ([]byte, error) {
 	if httpBody, ok := v.(*httpbody.HttpBody); ok {
 		return h.HTTPBodyMarshaler.Marshal(httpBody)
 	}
@@ -27,13 +30,38 @@ func (h *JSONMarshaler) Marshal(v interface{}) ([]byte, error) {
 		return v, nil
 	}
 
-	if _, ok := v.(utils.ResponseEntity); !ok {
-		v = utils.NewResponse(v)
+	var resp utils.ResponseEntity
+	if r, ok := v.(utils.ResponseEntity); ok {
+		resp = r
+	} else if r, ok := v.(interface {
+		GRPCStatus() *status.Status
+	}); ok {
+		resp = utils.NewErrResponse(r.GRPCStatus().Code(), r.GRPCStatus().Message())
+	} else if e, ok := v.(error); ok {
+		resp = utils.NewErrResponse(codes.Internal, e.Error())
+	} else {
+		resp = utils.NewResponse(v)
 	}
 
-	return json.Marshal(v)
+	if h.pretty {
+		return resp.MarshalIdent()
+	}
+	return resp.Marshal()
 }
 
-func NewJSONMarshaler() *JSONMarshaler {
-	return &JSONMarshaler{}
+func NewJSONMarshaller(pretty ...bool) *JSONMarshaller {
+	var p bool
+	if len(pretty) > 0 {
+		p = pretty[0]
+	}
+	return &JSONMarshaller{
+		pretty: p,
+		HTTPBodyMarshaler: &runtime.HTTPBodyMarshaler{
+			Marshaler: &runtime.JSONPb{
+				MarshalOptions: protojson.MarshalOptions{
+					EmitUnpopulated: true,
+				},
+			},
+		},
+	}
 }

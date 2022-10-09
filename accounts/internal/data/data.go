@@ -1,9 +1,15 @@
 package data
 
 import (
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/wire"
+	_ "github.com/lib/pq"
+	"github.com/transerver/accounts/internal/ent"
 	"github.com/transerver/commons/configs"
+	"github.com/xo/dburl"
 	"go.uber.org/zap"
+	"golang.org/x/net/context"
+	"time"
 )
 
 var ProviderSet = wire.NewSet(
@@ -13,9 +19,60 @@ var ProviderSet = wire.NewSet(
 )
 
 type Data struct {
-	logger *zap.Logger
+	logger    *zap.SugaredLogger
+	bootstrap configs.IConfig
+	ent       *ent.Client
+	err       error
 }
 
 func NewData(bootstrap configs.IConfig, logger *zap.Logger) (*Data, func(), error) {
-	return &Data{logger: logger}, func() {}, nil
+	data := &Data{logger: logger.Sugar(), bootstrap: bootstrap}
+	cleanDB := data.connectDatabase()
+	return data, func() {
+		if cleanDB != nil {
+			cleanDB()
+		}
+	}, data.err
+}
+
+func (d *Data) connectDatabase() func() {
+	dbc := d.bootstrap.DB()
+	var url *dburl.URL
+	url, d.err = dburl.Parse(dbc.DSN)
+	if d.err != nil {
+		return nil
+	}
+
+	var drv *sql.Driver
+	drv, d.err = sql.Open(url.Driver, url.DSN)
+	if d.err != nil {
+		return nil
+	}
+
+	db := drv.DB()
+	db.SetMaxIdleConns(dbc.Options.MaxIdleConns)
+	db.SetMaxOpenConns(dbc.Options.MaxOpenConns)
+	db.SetConnMaxIdleTime(dbc.Options.MaxIdleTime)
+	db.SetConnMaxLifetime(dbc.Options.MaxLifetime)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+	defer cancel()
+	if d.err = db.PingContext(ctx); d.err != nil {
+		return nil
+	}
+
+	opts := []ent.Option{
+		ent.Driver(drv),
+		ent.Log(func(a ...any) {
+			d.logger.Debug(a...)
+		}),
+	}
+	if d.bootstrap.Env() == configs.DEV {
+		opts = append(opts, ent.Debug())
+	}
+	d.ent = ent.NewClient(opts...)
+	d.logger.Infof("[%s] connect successfully!!!", url.URL.Redacted())
+	return func() {
+		_ = d.ent.Close()
+	}
 }
