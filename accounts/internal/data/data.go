@@ -1,14 +1,16 @@
 package data
 
 import (
+	"context"
 	"entgo.io/ent/dialect/sql"
+	rv9 "github.com/go-redis/redis/v9"
 	"github.com/google/wire"
 	_ "github.com/lib/pq"
 	"github.com/transerver/accounts/internal/ent"
 	"github.com/transerver/commons/configs"
+	"github.com/transerver/commons/rs"
 	"github.com/xo/dburl"
 	"go.uber.org/zap"
-	"golang.org/x/net/context"
 	"time"
 )
 
@@ -22,20 +24,45 @@ type Data struct {
 	logger    *zap.SugaredLogger
 	bootstrap configs.IConfig
 	ent       *ent.Client
+	redis     *rs.Client
 	err       error
 }
 
 func NewData(bootstrap configs.IConfig, logger *zap.Logger) (*Data, func(), error) {
 	data := &Data{logger: logger.Sugar(), bootstrap: bootstrap}
 	cleanDB := data.connectDatabase()
+	cleanRedis := data.connectRedis()
 	return data, func() {
 		if cleanDB != nil {
-			cleanDB()
+			_ = cleanDB()
+			data.logger.Infof("closing database connection.")
+		}
+		if cleanRedis != nil {
+			_ = cleanRedis()
+			data.logger.Infof("closing redis connection.")
 		}
 	}, data.err
 }
 
-func (d *Data) connectDatabase() func() {
+func (d *Data) connectRedis() func() error {
+	if d.err != nil {
+		return nil
+	}
+
+	client, err := rs.NewClientWithConfig(d.bootstrap, rs.Config{
+		OnConnect: func(ctx context.Context, cn *rv9.Conn) error {
+			d.logger.Infof("[%s] connnect successful", cn.String())
+			return nil
+		},
+	})
+	if err != nil {
+		return nil
+	}
+	d.redis = client
+	return client.Close
+}
+
+func (d *Data) connectDatabase() func() error {
 	dbc := d.bootstrap.DB()
 	var url *dburl.URL
 	url, d.err = dburl.Parse(dbc.DSN)
@@ -72,7 +99,5 @@ func (d *Data) connectDatabase() func() {
 	}
 	d.ent = ent.NewClient(opts...)
 	d.logger.Infof("[%s] connect successfully!!!", url.URL.Redacted())
-	return func() {
-		_ = d.ent.Close()
-	}
+	return d.ent.Close
 }

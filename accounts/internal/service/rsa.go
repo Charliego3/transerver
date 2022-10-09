@@ -1,14 +1,19 @@
 package service
 
 import (
+	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/accounts/internal/biz"
+	"github.com/transerver/protos/acctspb"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type RsaService struct {
-	// TODO: Unimplemented pb
+	acctspb.UnimplementedRsaServiceServer
+
 	usecase *biz.RsaUsecase
 	logger  *zap.Logger
 }
@@ -18,9 +23,18 @@ func NewRsaService(usecase *biz.RsaUsecase, logger *zap.Logger) *RsaService {
 }
 
 func (g *RsaService) RegisterGRPC(s *grpc.Server) {
-
+	acctspb.RegisterRsaServiceServer(s, g)
 }
 
 func (g *RsaService) RegisterHTTP(s *runtime.ServeMux) error {
-	return nil
+	return acctspb.RegisterRsaServiceHandlerServer(context.Background(), s, g)
+}
+
+func (g *RsaService) PublicKey(context.Context, *emptypb.Empty) (*wrapperspb.BytesValue, error) {
+	buf, err := g.usecase.PublicKey(":testRequestId") // TODO: real requestId
+	if err != nil {
+		return nil, err
+	}
+
+	return &wrapperspb.BytesValue{Value: buf}, nil
 }

@@ -1,4 +1,4 @@
-package etcds
+package es
 
 import (
 	"time"

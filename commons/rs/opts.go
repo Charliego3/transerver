@@ -1,4 +1,4 @@
-package redis
+package rs
 
 import (
 	"context"
@@ -14,6 +14,12 @@ type Option func(opt *rv9.UniversalOptions)
 func WithAddrs(addrs ...string) Option {
 	return func(opt *rv9.UniversalOptions) {
 		opt.Addrs = addrs
+	}
+}
+
+func WithDB(db int) Option {
+	return func(opt *rv9.UniversalOptions) {
+		opt.DB = db
 	}
 }
 
@@ -158,5 +164,11 @@ func WithRouteByLatency(latency bool) Option {
 func WithRouteRandomly(randomly bool) Option {
 	return func(opt *rv9.UniversalOptions) {
 		opt.RouteRandomly = randomly
+	}
+}
+
+func WithMasterName(name string) Option {
+	return func(opt *rv9.UniversalOptions) {
+		opt.MasterName = name
 	}
 }

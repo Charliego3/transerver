@@ -14,8 +14,6 @@ type Tx struct {
 	config
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
-	// Rsa is the client for interacting with the Rsa builders.
-	Rsa *RsaClient
 
 	// lazily loaded.
 	client     *Client
@@ -152,7 +150,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Account = NewAccountClient(tx.config)
-	tx.Rsa = NewRsaClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

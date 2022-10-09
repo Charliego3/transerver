@@ -19,7 +19,8 @@ init:
 
 .PHONY: gen
 gen:
-	mkdir swagger \
+	mkdir -p swagger \
+	&& rm -rf swagger/* \
 	&& protoc \
 		--go_out=. --go_opt=module=github.com/transerver/protos \
 		--go-grpc_out . --go-grpc_opt=module=github.com/transerver/protos \

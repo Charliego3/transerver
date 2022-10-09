@@ -11,7 +11,6 @@ import (
 	"github.com/transerver/accounts/internal/ent/migrate"
 
 	"github.com/transerver/accounts/internal/ent/account"
-	"github.com/transerver/accounts/internal/ent/rsa"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -24,8 +23,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// Account is the client for interacting with the Account builders.
 	Account *AccountClient
-	// Rsa is the client for interacting with the Rsa builders.
-	Rsa *RsaClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -40,7 +37,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Account = NewAccountClient(c.config)
-	c.Rsa = NewRsaClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -75,7 +71,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:     ctx,
 		config:  cfg,
 		Account: NewAccountClient(cfg),
-		Rsa:     NewRsaClient(cfg),
 	}, nil
 }
 
@@ -96,7 +91,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:     ctx,
 		config:  cfg,
 		Account: NewAccountClient(cfg),
-		Rsa:     NewRsaClient(cfg),
 	}, nil
 }
 
@@ -126,7 +120,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Account.Use(hooks...)
-	c.Rsa.Use(hooks...)
 }
 
 // AccountClient is a client for the Account schema.
@@ -217,94 +210,4 @@ func (c *AccountClient) GetX(ctx context.Context, id int) *Account {
 // Hooks returns the client hooks.
 func (c *AccountClient) Hooks() []Hook {
 	return c.hooks.Account
-}
-
-// RsaClient is a client for the Rsa schema.
-type RsaClient struct {
-	config
-}
-
-// NewRsaClient returns a client for the Rsa from the given config.
-func NewRsaClient(c config) *RsaClient {
-	return &RsaClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `rsa.Hooks(f(g(h())))`.
-func (c *RsaClient) Use(hooks ...Hook) {
-	c.hooks.Rsa = append(c.hooks.Rsa, hooks...)
-}
-
-// Create returns a builder for creating a Rsa entity.
-func (c *RsaClient) Create() *RsaCreate {
-	mutation := newRsaMutation(c.config, OpCreate)
-	return &RsaCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Rsa entities.
-func (c *RsaClient) CreateBulk(builders ...*RsaCreate) *RsaCreateBulk {
-	return &RsaCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Rsa.
-func (c *RsaClient) Update() *RsaUpdate {
-	mutation := newRsaMutation(c.config, OpUpdate)
-	return &RsaUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *RsaClient) UpdateOne(r *Rsa) *RsaUpdateOne {
-	mutation := newRsaMutation(c.config, OpUpdateOne, withRsa(r))
-	return &RsaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *RsaClient) UpdateOneID(id int) *RsaUpdateOne {
-	mutation := newRsaMutation(c.config, OpUpdateOne, withRsaID(id))
-	return &RsaUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Rsa.
-func (c *RsaClient) Delete() *RsaDelete {
-	mutation := newRsaMutation(c.config, OpDelete)
-	return &RsaDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *RsaClient) DeleteOne(r *Rsa) *RsaDeleteOne {
-	return c.DeleteOneID(r.ID)
-}
-
-// DeleteOne returns a builder for deleting the given entity by its id.
-func (c *RsaClient) DeleteOneID(id int) *RsaDeleteOne {
-	builder := c.Delete().Where(rsa.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &RsaDeleteOne{builder}
-}
-
-// Query returns a query builder for Rsa.
-func (c *RsaClient) Query() *RsaQuery {
-	return &RsaQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a Rsa entity by its id.
-func (c *RsaClient) Get(ctx context.Context, id int) (*Rsa, error) {
-	return c.Query().Where(rsa.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *RsaClient) GetX(ctx context.Context, id int) *Rsa {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *RsaClient) Hooks() []Hook {
-	return c.hooks.Rsa
 }

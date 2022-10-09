@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
-	google.golang.org/genproto v0.0.0-20220929141241-1ce7b20da813
+	google.golang.org/genproto v0.0.0-20220930163606-c98284e70a91
 	google.golang.org/grpc v1.49.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
 	google.golang.org/protobuf v1.28.1

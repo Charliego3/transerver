@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package accountpb;
+option go_package = "github.com/transerver/protos/acctspb";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+service RsaService {
+  rpc PublicKey(google.protobuf.Empty) returns (google.protobuf.BytesValue) {
+    option (google.api.http) =  {
+      get: "/rsa/v1/getPublicKey"
+    };
+  }
+}

@@ -2,7 +2,7 @@ package configs
 
 import "time"
 
-type Database struct {
+type DBConfig struct {
 	DSN     string `json:"dsn" yaml:"dsn"`
 	Options struct {
 		MaxOpenConns int           `json:"maxOpenConns,omitempty" yaml:"maxOpenConns,omitempty"`

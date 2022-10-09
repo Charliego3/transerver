@@ -7,7 +7,41 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 )
+
+func solveResponse(v any) utils.ResponseEntity {
+	var resp utils.ResponseEntity
+	switch t := v.(type) {
+	case utils.ResponseEntity:
+		resp = t
+	case interface{ GRPCStatus() *status.Status }:
+		resp = utils.NewErrResponse(t.GRPCStatus().Code(), t.GRPCStatus().Message())
+	case error:
+		resp = utils.NewErrResponse(codes.Internal, t.Error())
+	case *wrapperspb.BytesValue:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.StringValue:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.BoolValue:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.DoubleValue:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.Int32Value:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.Int64Value:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.UInt32Value:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.UInt64Value:
+		resp = utils.NewResponse(t.Value)
+	case *wrapperspb.FloatValue:
+		resp = utils.NewResponse(t.Value)
+	default:
+		resp = utils.NewResponse(t)
+	}
+	return resp
+}
 
 type JSONMarshaller struct {
 	*runtime.HTTPBodyMarshaler
@@ -30,19 +64,7 @@ func (h *JSONMarshaller) Marshal(v interface{}) ([]byte, error) {
 		return v, nil
 	}
 
-	var resp utils.ResponseEntity
-	if r, ok := v.(utils.ResponseEntity); ok {
-		resp = r
-	} else if r, ok := v.(interface {
-		GRPCStatus() *status.Status
-	}); ok {
-		resp = utils.NewErrResponse(r.GRPCStatus().Code(), r.GRPCStatus().Message())
-	} else if e, ok := v.(error); ok {
-		resp = utils.NewErrResponse(codes.Internal, e.Error())
-	} else {
-		resp = utils.NewResponse(v)
-	}
-
+	resp := solveResponse(v)
 	if h.pretty {
 		return resp.MarshalIdent()
 	}

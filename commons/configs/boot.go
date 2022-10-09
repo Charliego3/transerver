@@ -12,13 +12,15 @@ const (
 type IConfig interface {
 	Addr() string
 	Env() Environment
-	DB() Database
+	DB() DBConfig
+	Redis() RedisConfig
 }
 
 type Bootstrap struct {
 	Environment Environment `json:"environment,omitempty" yaml:"environment,omitempty"`
 	Address     string      `json:"address,omitempty" yaml:"address,omitempty"`
-	Database    Database    `json:"database,omitempty" yaml:"database,omitempty"`
+	Database    DBConfig    `json:"database,omitempty" yaml:"database,omitempty"`
+	RedisConfig RedisConfig `json:"redis,omitempty" yaml:"redis,omitempty"`
 }
 
 func (b Bootstrap) Addr() string {
@@ -27,11 +29,15 @@ func (b Bootstrap) Addr() string {
 
 func (b Bootstrap) Env() Environment {
 	if strutil.IsBlank(string(b.Environment)) {
-		return PROD
+		b.Environment = PROD
 	}
 	return b.Environment
 }
 
-func (b Bootstrap) DB() Database {
+func (b Bootstrap) DB() DBConfig {
 	return b.Database
+}
+
+func (b Bootstrap) Redis() RedisConfig {
+	return b.RedisConfig
 }

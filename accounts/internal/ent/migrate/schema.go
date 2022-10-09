@@ -18,20 +18,9 @@ var (
 		Columns:    AccountsColumns,
 		PrimaryKey: []*schema.Column{AccountsColumns[0]},
 	}
-	// RsasColumns holds the columns for the "rsas" table.
-	RsasColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-	}
-	// RsasTable holds the schema information for the "rsas" table.
-	RsasTable = &schema.Table{
-		Name:       "rsas",
-		Columns:    RsasColumns,
-		PrimaryKey: []*schema.Column{RsasColumns[0]},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
-		RsasTable,
 	}
 )
 

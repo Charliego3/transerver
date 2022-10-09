@@ -8,6 +8,3 @@ import (
 
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
-
-// Rsa is the predicate function for rsa builders.
-type Rsa func(*sql.Selector)

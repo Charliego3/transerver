@@ -16,7 +16,7 @@ import (
 
 func DefaultErrorHandler(
 	ctx context.Context,
-	mux *runtime.ServeMux,
+	_ *runtime.ServeMux,
 	marshaller runtime.Marshaler,
 	w http.ResponseWriter,
 	r *http.Request,
@@ -24,32 +24,26 @@ func DefaultErrorHandler(
 ) {
 	// return Internal when Marshal failed
 	const fallback = `{"code": 13, "message": "failed to marshal error message"}`
-
-	var rtn utils.ResponseEntity
-
-	if r, ok := err.(interface {
-		GRPCStatus() *status.Status
-	}); ok {
-		rtn = utils.NewErrResponse(r.GRPCStatus().Code(), r.GRPCStatus().Message())
-	} else if v, ok := err.(utils.ResponseEntity); !ok {
-		rtn = utils.NewErrResponse(codes.Unknown, err.Error())
-	} else {
-		rtn = v
+	code := codes.Internal
+	if r, ok := err.(interface{ GRPCStatus() *status.Status }); ok {
+		code = r.GRPCStatus().Code()
+	} else if r, ok := err.(interface{ Code() codes.Code }); ok {
+		code = r.Code()
 	}
 
 	w.Header().Del("Trailer")
 	w.Header().Del("Transfer-Encoding")
 
-	contentType := marshaller.ContentType(rtn)
+	contentType := marshaller.ContentType(err)
 	w.Header().Set("Content-Type", contentType)
 
-	if rtn.Code() == codes.Unauthenticated {
-		w.Header().Set("WWW-Authenticate", rtn.Error())
+	if code == codes.Unauthenticated {
+		w.Header().Set("WWW-Authenticate", err.Error())
 	}
 
-	buf, mer := marshaller.Marshal(rtn)
+	buf, mer := marshaller.Marshal(err)
 	if mer != nil {
-		grpclog.Infof("Failed to marshal error message %v: %v", rtn, mer)
+		grpclog.Infof("Failed to marshal error message %v: %v", err, mer)
 		w.WriteHeader(http.StatusInternalServerError)
 		if _, err := io.WriteString(w, fallback); err != nil {
 			grpclog.Infof("Failed to write response: %v", err)
@@ -80,7 +74,7 @@ func DefaultErrorHandler(
 		w.Header().Set("Transfer-Encoding", "chunked")
 	}
 
-	st := runtime.HTTPStatusFromCode(rtn.Code())
+	st := runtime.HTTPStatusFromCode(code)
 	w.WriteHeader(st)
 	if _, err := w.Write(buf); err != nil {
 		grpclog.Infof("Failed to write response: %v", err)
