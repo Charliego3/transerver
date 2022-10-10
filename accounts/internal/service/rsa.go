@@ -31,10 +31,10 @@ func (g *RsaService) RegisterHTTP(s *runtime.ServeMux) error {
 }
 
 func (g *RsaService) PublicKey(context.Context, *emptypb.Empty) (*wrapperspb.BytesValue, error) {
-	buf, err := g.usecase.PublicKey(":testRequestId") // TODO: real requestId
+	obj, err := g.usecase.FetchObj(":testRequestId") // TODO: real requestId
 	if err != nil {
 		return nil, err
 	}
 
-	return &wrapperspb.BytesValue{Value: buf}, nil
+	return &wrapperspb.BytesValue{Value: obj.Public}, nil
 }

@@ -36,9 +36,9 @@ func wireApp() (*commons.App, func(), error) {
 	}
 	accountRepo := data.NewAccountRepo(dataData, zapLogger)
 	accountUsecase := biz.NewAccountUsecase(accountRepo, zapLogger)
-	accountService := service.NewAccountService(accountUsecase, zapLogger)
 	rsaRepo := data.NewRsaRepo(dataData, zapLogger)
 	rsaUsecase := biz.NewRsaUsecase(rsaRepo, zapLogger)
+	accountService := service.NewAccountService(accountUsecase, rsaUsecase, zapLogger)
 	rsaService := service.NewRsaService(rsaUsecase, zapLogger)
 	v3 := service.MakeServices(accountService, rsaService)
 	v4 := NewHTTPServeMuxOpts()

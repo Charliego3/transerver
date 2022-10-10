@@ -44,7 +44,7 @@ func (h *RsaHelper) Err() error {
 	return h.err
 }
 
-func (g *RsaUsecase) PublicKey(requestId string, opts ...Option) ([]byte, error) {
+func (g *RsaUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error) {
 	if len(requestId) == 0 {
 		return nil, errors.New("empty requestId for fetch rsa key")
 	}
@@ -76,7 +76,7 @@ func (g *RsaUsecase) PublicKey(requestId string, opts ...Option) ([]byte, error)
 			return nil, err
 		}
 	}
-	return obj.Public, nil
+	return obj, nil
 }
 
 func (g *RsaUsecase) solveId(requestId string) string {
@@ -153,22 +153,22 @@ func SetRsaKeyPrefix(prefix string) {
 
 type Option func(*generator)
 
-func WithBits(bits int) Option {
+func WithRsaBits(bits int) Option {
 	return func(g *generator) {
 		g.bits = bits
 	}
 }
 
-// WithExpiration settings the global rsa expiration
+// WithRsaExpiration settings the global rsa expiration
 // Zero expiration means the key has no expiration time.
-func WithExpiration(expiration time.Duration) Option {
+func WithRsaExpiration(expiration time.Duration) Option {
 	return func(g *generator) {
 		g.expiration = expiration
 	}
 }
 
-// WithNoGen when the requestId is not exist don't create
-func WithNoGen(g *generator) {
+// WithRsaNoGen when the requestId is not exist don't create
+func WithRsaNoGen(g *generator) {
 	g.renew = false
 }
 

@@ -1,7 +1,9 @@
 package hs
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/commons"
@@ -46,7 +48,18 @@ func NewHTTPServerWithOptions(
 			return nil, err
 		}
 	}
-	return &http.Server{Handler: mux}, nil
+	return &http.Server{Handler: handlerFunc(mux)}, nil
+}
+
+func handlerFunc(mux *runtime.ServeMux) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println(r.URL.Path)
+		if strings.HasSuffix(r.URL.Path, "register") {
+			_, _ = w.Write([]byte("you must be authed..."))
+			return
+		}
+		mux.ServeHTTP(w, r)
+	}
 }
 
 func DefaultServeMuxOpts() []runtime.ServeMuxOption {

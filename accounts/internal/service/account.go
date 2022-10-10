@@ -15,11 +15,12 @@ type AccountService struct {
 	acctspb.UnimplementedAccountServiceServer
 
 	usecase *biz.AccountUsecase
+	rsa     *biz.RsaUsecase
 	logger  *zap.Logger
 }
 
-func NewAccountService(usecase *biz.AccountUsecase, logger *zap.Logger) *AccountService {
-	return &AccountService{usecase: usecase, logger: logger}
+func NewAccountService(usecase *biz.AccountUsecase, rsa *biz.RsaUsecase, logger *zap.Logger) *AccountService {
+	return &AccountService{usecase: usecase, rsa: rsa, logger: logger}
 }
 
 func (g *AccountService) RegisterGRPC(s *grpc.Server) {
@@ -31,6 +32,12 @@ func (g *AccountService) RegisterHTTP(s *runtime.ServeMux) error {
 }
 
 func (g *AccountService) Register(context.Context, *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
+	obj, err := g.rsa.FetchObj("", biz.WithRsaNoGen)
+	if err != nil {
+		return nil, err
+	}
+
+	_ = obj.Private
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 
