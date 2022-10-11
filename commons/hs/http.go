@@ -50,13 +50,15 @@ func NewHTTPServer(logger *zap.Logger, services []service.Service, opts ...Optio
 		}
 	}
 
-	var routes []string
+	routes := make(map[string]struct{})
 	for _, s := range services {
 		if err := s.RegisterHTTP(gwmux); err != nil {
 			return nil, err
 		}
 		_, rs := s.Routers()
-		routes = append(routes, rs...)
+		for _, r := range rs {
+			routes[r] = struct{}{}
+		}
 	}
 
 	var handler http.Handler = gwmux
@@ -73,7 +75,7 @@ func NewHTTPServer(logger *zap.Logger, services []service.Service, opts ...Optio
 
 func (s *Server) auth(
 	mux *runtime.ServeMux,
-	routers []string,
+	routers map[string]struct{},
 	w http.ResponseWriter,
 	r *http.Request,
 ) bool {
@@ -82,22 +84,19 @@ func (s *Server) auth(
 	}
 
 	_, outbound := runtime.MarshalerForRequest(mux, r)
-	for _, route := range routers {
-		if route != r.URL.Path {
-			continue
-		}
-
-		err := s.authFunc(r)
-		if err == nil {
-			break
-		}
-
-		buf, err := outbound.Marshal(err)
-		if err != nil {
-			buf = []byte(fallback)
-		}
-		_, _ = w.Write(buf)
-		return true
+	if _, ok := routers[r.URL.Path]; !ok {
+		return false
 	}
-	return false
+
+	err := s.authFunc(r)
+	if err == nil {
+		return false
+	}
+
+	buf, err := outbound.Marshal(err)
+	if err != nil {
+		buf = []byte(fallback)
+	}
+	_, _ = w.Write(buf)
+	return true
 }
