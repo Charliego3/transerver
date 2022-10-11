@@ -30,6 +30,10 @@ func (g *RsaService) RegisterHTTP(s *runtime.ServeMux) error {
 	return acctspb.RegisterRsaServiceHandlerServer(context.Background(), s, g)
 }
 
+func (g *RsaService) Routers() ([]string, []string) {
+	return nil, nil
+}
+
 func (g *RsaService) PublicKey(context.Context, *emptypb.Empty) (*wrapperspb.BytesValue, error) {
 	obj, err := g.usecase.FetchObj(":testRequestId") // TODO: real requestId
 	if err != nil {

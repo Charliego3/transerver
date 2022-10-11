@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package accountpb;
+package org.github.transerver.accounts;
 option go_package = "github.com/transerver/protos/acctspb";
 
 import "google/api/annotations.proto";

@@ -23,7 +23,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/accountpbLoginReply"
+              "$ref": "#/definitions/accountsLoginReply"
             }
           },
           "default": {
@@ -39,7 +39,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/accountpbLoginRequest"
+              "$ref": "#/definitions/accountsLoginRequest"
             }
           }
         ],
@@ -55,7 +55,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/accountpbRegisterReply"
+              "$ref": "#/definitions/accountsRegisterReply"
             }
           },
           "default": {
@@ -71,7 +71,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/accountpbRegisterRequest"
+              "$ref": "#/definitions/accountsRegisterRequest"
             }
           }
         ],
@@ -82,16 +82,16 @@
     }
   },
   "definitions": {
-    "accountpbLoginReply": {
+    "accountsLoginReply": {
       "type": "object"
     },
-    "accountpbLoginRequest": {
+    "accountsLoginRequest": {
       "type": "object"
     },
-    "accountpbRegisterReply": {
+    "accountsRegisterReply": {
       "type": "object"
     },
-    "accountpbRegisterRequest": {
+    "accountsRegisterRequest": {
       "type": "object"
     },
     "protobufAny": {

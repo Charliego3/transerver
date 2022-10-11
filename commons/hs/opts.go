@@ -14,6 +14,29 @@ import (
 	"google.golang.org/grpc/grpclog"
 )
 
+// return Internal when Marshal failed
+const fallback = `{"code": 13, "message": "failed to marshal error message"}`
+
+type Option func(*Server)
+
+func WithServeMuxOpts(opts ...runtime.ServeMuxOption) Option {
+	return func(hs *Server) {
+		hs.muxOpts = append(hs.muxOpts, opts...)
+	}
+}
+
+func WithHandlers(handlers ...Handler) Option {
+	return func(hs *Server) {
+		hs.handlers = handlers
+	}
+}
+
+func WithAuthFunc(fn func(*http.Request) error) Option {
+	return func(hs *Server) {
+		hs.authFunc = fn
+	}
+}
+
 func DefaultErrorHandler(
 	ctx context.Context,
 	_ *runtime.ServeMux,
@@ -22,8 +45,6 @@ func DefaultErrorHandler(
 	r *http.Request,
 	err error,
 ) {
-	// return Internal when Marshal failed
-	const fallback = `{"code": 13, "message": "failed to marshal error message"}`
 	code := codes.Internal
 	if r, ok := err.(interface{ GRPCStatus() *status.Status }); ok {
 		code = r.GRPCStatus().Code()

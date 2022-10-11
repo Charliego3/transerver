@@ -1,70 +1,103 @@
 package hs
 
 import (
-	"fmt"
-	"net/http"
-	"strings"
-
+	"context"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/transerver/commons"
+	"github.com/transerver/commons/service"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/status"
+	"net/http"
 )
 
-func NewHTTPServerWithoutOpts(
-	services []commons.Service,
-) (*http.Server, error) {
-	return NewHTTPServerWithOptions(services, nil)
+type Server struct {
+	*http.Server
+
+	logger   *zap.SugaredLogger
+	muxOpts  []runtime.ServeMuxOption
+	handlers []Handler
+	authFunc func(*http.Request) error
 }
 
-func NewHTTPServerWithoutHandlers(
-	services []commons.Service,
-	muxOpts ...runtime.ServeMuxOption,
-) (*http.Server, error) {
-	return NewHTTPServerWithOptions(services, nil, muxOpts...)
+func (s *Server) Check(_ context.Context, _ *grpc_health_v1.HealthCheckRequest, _ ...grpc.CallOption) (*grpc_health_v1.HealthCheckResponse, error) {
+	return &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}, nil
 }
 
-func NewHTTPServerWithoutMuxOpts(
-	services []commons.Service,
-	handlers []Handler,
-) (*http.Server, error) {
-	return NewHTTPServerWithOptions(services, handlers)
+func (s *Server) Watch(_ context.Context, _ *grpc_health_v1.HealthCheckRequest, _ ...grpc.CallOption) (grpc_health_v1.Health_WatchClient, error) {
+	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
-func NewHTTPServerWithOptions(
-	services []commons.Service,
-	handlers []Handler,
-	muxOpts ...runtime.ServeMuxOption,
-) (*http.Server, error) {
-	muxOpts = append(muxOpts, runtime.WithMarshalerOption("application/json", NewJSONMarshaller()))
-	muxOpts = append(muxOpts, runtime.WithMarshalerOption("application/json+pretty", NewJSONMarshaller(true)))
-	mux := runtime.NewServeMux(muxOpts...)
-	for _, handler := range handlers {
-		if err := mux.HandlePath(handler.Method, handler.Path, handler.route); err != nil {
-			return nil, err
-		}
-	}
-
-	for _, service := range services {
-		if err := service.RegisterHTTP(mux); err != nil {
-			return nil, err
-		}
-	}
-	return &http.Server{Handler: handlerFunc(mux)}, nil
-}
-
-func handlerFunc(mux *runtime.ServeMux) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.URL.Path)
-		if strings.HasSuffix(r.URL.Path, "register") {
-			_, _ = w.Write([]byte("you must be authed..."))
-			return
-		}
-		mux.ServeHTTP(w, r)
-	}
-}
-
-func DefaultServeMuxOpts() []runtime.ServeMuxOption {
-	return []runtime.ServeMuxOption{
+func NewHTTPServer(logger *zap.Logger, services []service.Service, opts ...Option) (*Server, error) {
+	hs := &Server{logger: logger.Sugar()}
+	hs.muxOpts = []runtime.ServeMuxOption{
+		runtime.WithMarshalerOption("application/json", NewJSONMarshaller()),
+		runtime.WithMarshalerOption("application/json+pretty", NewJSONMarshaller(true)),
 		runtime.WithErrorHandler(DefaultErrorHandler),
 		runtime.WithRoutingErrorHandler(DefaultRoutingErrorHandler),
+		runtime.WithHealthzEndpoint(hs),
 	}
+
+	for _, opt := range opts {
+		opt(hs)
+	}
+
+	gwmux := runtime.NewServeMux(hs.muxOpts...)
+	for _, handler := range hs.handlers {
+		if err := gwmux.HandlePath(handler.Method, handler.Path, handler.route); err != nil {
+			return nil, err
+		}
+	}
+
+	var routes []string
+	for _, s := range services {
+		if err := s.RegisterHTTP(gwmux); err != nil {
+			return nil, err
+		}
+		_, rs := s.Routers()
+		routes = append(routes, rs...)
+	}
+
+	var handler http.Handler = gwmux
+	handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if hs.auth(gwmux, routes, w, r) {
+			return
+		}
+
+		gwmux.ServeHTTP(w, r)
+	})
+	hs.Server = &http.Server{Handler: handler}
+	return hs, nil
+}
+
+func (s *Server) auth(
+	mux *runtime.ServeMux,
+	routers []string,
+	w http.ResponseWriter,
+	r *http.Request,
+) bool {
+	if s.authFunc == nil {
+		return false
+	}
+
+	_, outbound := runtime.MarshalerForRequest(mux, r)
+	for _, route := range routers {
+		if route != r.URL.Path {
+			continue
+		}
+
+		err := s.authFunc(r)
+		if err == nil {
+			break
+		}
+
+		buf, err := outbound.Marshal(err)
+		if err != nil {
+			buf = []byte(fallback)
+		}
+		_, _ = w.Write(buf)
+		return true
+	}
+	return false
 }

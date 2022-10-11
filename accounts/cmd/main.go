@@ -1,23 +1,22 @@
 package main
 
 import (
+	"errors"
 	"github.com/google/wire"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/accounts/internal/conf"
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
 	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/hs"
-	"google.golang.org/grpc"
 	"io"
+	"net/http"
 )
 
 var providerSet = wire.NewSet(
 	NewCfgOpts,
-	NewGRPCOpts,
-	NewHTTPServeMuxOpts,
 	NewLoggerWriter,
+	NewHTTPOptions,
 	biz.ProviderSet,
 	conf.ProviderSet,
 	data.ProviderSet,
@@ -40,12 +39,12 @@ func NewCfgOpts() []configs.Option {
 	}
 }
 
-func NewGRPCOpts() []grpc.ServerOption {
-	return []grpc.ServerOption{}
-}
-
-func NewHTTPServeMuxOpts() []runtime.ServeMuxOption {
-	return hs.DefaultServeMuxOpts()
+func NewHTTPOptions() []hs.Option {
+	return []hs.Option{
+		hs.WithAuthFunc(func(r *http.Request) error {
+			return errors.New("auth not pass")
+		}),
+	}
 }
 
 func NewLoggerWriter() io.Writer {

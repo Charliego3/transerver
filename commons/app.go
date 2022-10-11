@@ -1,18 +1,17 @@
 package commons
 
 import (
-	"net"
-	"net/http"
-
 	"github.com/soheilhy/cmux"
 	"github.com/transerver/commons/configs"
+	"github.com/transerver/commons/gs"
+	"github.com/transerver/commons/hs"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
+	"net"
 )
 
 type App struct {
-	hs *http.Server
-	gs *grpc.Server
+	hs *hs.Server
+	gs *gs.Server
 	bs configs.IConfig
 	lg *zap.Logger
 }
@@ -20,8 +19,8 @@ type App struct {
 func NewApp(
 	bs configs.IConfig,
 	lg *zap.Logger,
-	hs *http.Server,
-	gs *grpc.Server,
+	hs *hs.Server,
+	gs *gs.Server,
 ) *App {
 	return &App{bs: bs, lg: lg, hs: hs, gs: gs}
 }

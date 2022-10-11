@@ -37,7 +37,7 @@ func NewRsaServiceClient(cc grpc.ClientConnInterface) RsaServiceClient {
 
 func (c *rsaServiceClient) PublicKey(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.BytesValue, error) {
 	out := new(wrapperspb.BytesValue)
-	err := c.cc.Invoke(ctx, "/accountpb.RsaService/PublicKey", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/org.github.transerver.accounts.RsaService/PublicKey", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func _RsaService_PublicKey_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/accountpb.RsaService/PublicKey",
+		FullMethod: "/org.github.transerver.accounts.RsaService/PublicKey",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RsaServiceServer).PublicKey(ctx, req.(*emptypb.Empty))
@@ -94,7 +94,7 @@ func _RsaService_PublicKey_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var RsaService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "accountpb.RsaService",
+	ServiceName: "org.github.transerver.accounts.RsaService",
 	HandlerType: (*RsaServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

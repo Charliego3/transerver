@@ -16,7 +16,7 @@ func NewClientWithoutOpts(logger *zap.Logger) (*Client, error) {
 }
 
 func NewClient(logger *zap.Logger, opts ...Option) (*Client, error) {
-	cfg := &ev3.Config{}
+	cfg := &ev3.Config{Logger: logger}
 	for _, opt := range opts {
 		opt(cfg)
 	}
@@ -28,7 +28,6 @@ func NewClient(logger *zap.Logger, opts ...Option) (*Client, error) {
 		cfg.DialTimeout = time.Minute
 	}
 
-	cfg.Logger = logger
 	cli, err := ev3.New(*cfg)
 	return &Client{Client: cli}, err
 }

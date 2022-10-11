@@ -31,6 +31,10 @@ func (g *AccountService) RegisterHTTP(s *runtime.ServeMux) error {
 	return acctspb.RegisterAccountServiceHandlerServer(context.Background(), s, g)
 }
 
+func (g *AccountService) Routers() ([]string, []string) {
+	return nil, nil
+}
+
 func (g *AccountService) Register(context.Context, *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
 	obj, err := g.rsa.FetchObj("", biz.WithRsaNoGen)
 	if err != nil {

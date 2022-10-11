@@ -36,7 +36,7 @@ func NewAccountServiceClient(cc grpc.ClientConnInterface) AccountServiceClient {
 
 func (c *accountServiceClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterReply, error) {
 	out := new(RegisterReply)
-	err := c.cc.Invoke(ctx, "/accountpb.AccountService/Register", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/org.github.transerver.accounts.AccountService/Register", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +45,7 @@ func (c *accountServiceClient) Register(ctx context.Context, in *RegisterRequest
 
 func (c *accountServiceClient) Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginReply, error) {
 	out := new(LoginReply)
-	err := c.cc.Invoke(ctx, "/accountpb.AccountService/Login", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/org.github.transerver.accounts.AccountService/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func _AccountService_Register_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/accountpb.AccountService/Register",
+		FullMethod: "/org.github.transerver.accounts.AccountService/Register",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccountServiceServer).Register(ctx, req.(*RegisterRequest))
@@ -112,7 +112,7 @@ func _AccountService_Login_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/accountpb.AccountService/Login",
+		FullMethod: "/org.github.transerver.accounts.AccountService/Login",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(AccountServiceServer).Login(ctx, req.(*LoginRequest))
@@ -124,7 +124,7 @@ func _AccountService_Login_Handler(srv interface{}, ctx context.Context, dec fun
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var AccountService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "accountpb.AccountService",
+	ServiceName: "org.github.transerver.accounts.AccountService",
 	HandlerType: (*AccountServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

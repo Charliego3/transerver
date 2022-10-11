@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/google/wire"
-	"github.com/transerver/commons"
+	"github.com/transerver/commons/service"
 )
 
 var ProviderSet = wire.NewSet(
@@ -14,8 +14,8 @@ var ProviderSet = wire.NewSet(
 func MakeServices(
 	s0 *AccountService,
 	s1 *RsaService,
-) []commons.Service {
-	return []commons.Service{
+) []service.Service {
+	return []service.Service{
 		s0,
 		s1,
 	}
