@@ -22,7 +22,7 @@ service AccountService {
 }
 
 message RegisterRequest {
-
+  string unique = 1;
 }
 
 message RegisterReply {
@@ -30,7 +30,7 @@ message RegisterReply {
 }
 
 message LoginRequest {
-
+  string unique = 1;
 }
 
 message LoginReply {

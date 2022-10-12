@@ -15,12 +15,12 @@ type AccountService struct {
 	acctspb.UnimplementedAccountServiceServer
 
 	usecase *biz.AccountUsecase
-	rsa     *biz.RsaUsecase
+	pubcase *biz.PubUsecase
 	logger  *zap.Logger
 }
 
-func NewAccountService(usecase *biz.AccountUsecase, rsa *biz.RsaUsecase, logger *zap.Logger) *AccountService {
-	return &AccountService{usecase: usecase, rsa: rsa, logger: logger}
+func NewAccountService(usecase *biz.AccountUsecase, rsa *biz.PubUsecase, logger *zap.Logger) *AccountService {
+	return &AccountService{usecase: usecase, pubcase: rsa, logger: logger}
 }
 
 func (g *AccountService) RegisterGRPC(s *grpc.Server) {
@@ -35,8 +35,19 @@ func (g *AccountService) Routers() ([]string, []string) {
 	return nil, nil
 }
 
-func (g *AccountService) Register(context.Context, *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
-	obj, err := g.rsa.FetchObj("", biz.WithRsaNoGen)
+func (g *AccountService) validateUniqueId(uniqueId string) error {
+	if !g.pubcase.ValidateUniqueId(uniqueId) {
+		return status.Errorf(codes.InvalidArgument, "Invalid unique: %s", uniqueId)
+	}
+	return nil
+}
+
+func (g *AccountService) Register(_ context.Context, req *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
+	if err := g.validateUniqueId(req.GetUnique()); err != nil {
+		return nil, err
+	}
+
+	obj, err := g.pubcase.FetchObj("", biz.WithRsaNoGen)
 	if err != nil {
 		return nil, err
 	}
@@ -45,6 +56,10 @@ func (g *AccountService) Register(context.Context, *acctspb.RegisterRequest) (*a
 	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
 }
 
-func (g *AccountService) Login(context.Context, *acctspb.LoginRequest) (*acctspb.LoginReply, error) {
+func (g *AccountService) Login(_ context.Context, req *acctspb.LoginRequest) (*acctspb.LoginReply, error) {
+	if err := g.validateUniqueId(req.GetUnique()); err != nil {
+		return nil, err
+	}
+
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }

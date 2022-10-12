@@ -13,7 +13,7 @@ var ProviderSet = wire.NewSet(
 
 func MakeServices(
 	s0 *AccountService,
-	s1 *RsaService,
+	s1 *PubService,
 ) []service.Service {
 	return []service.Service{
 		s0,

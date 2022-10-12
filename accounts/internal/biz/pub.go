@@ -8,6 +8,7 @@ import (
 	"encoding/pem"
 	"errors"
 	json "github.com/json-iterator/go"
+	nanoid "github.com/matoous/go-nanoid/v2"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,63 +16,51 @@ import (
 	"time"
 )
 
-type RsaRepo interface {
-	Fetch(string) (*RsaObj, error)
-	Store(string, time.Duration, *RsaObj) error
+type PubRepo interface {
+	FetchRsaObj(string) (*RsaObj, error)
+	StoreRsaObj(string, time.Duration, *RsaObj) error
+	UniqueIdExists(string) bool
+	StoreUniqueId(string, time.Duration) error
 }
 
-type RsaUsecase struct {
-	repo   RsaRepo
+type PubUsecase struct {
+	repo   PubRepo
 	logger *zap.Logger
 }
 
-type RsaHelper struct {
-	repo   RsaRepo
-	logger *zap.Logger
-	err    error
-}
-
-func NewRsaUsecase(repo RsaRepo, logger *zap.Logger) *RsaUsecase {
+func NewRsaUsecase(repo PubRepo, logger *zap.Logger) *PubUsecase {
 	SetRsaKeyPrefix("rsa")
-	return &RsaUsecase{repo: repo, logger: logger}
+	return &PubUsecase{repo: repo, logger: logger}
 }
 
-func (g *RsaUsecase) Helper() *RsaHelper {
-	return &RsaHelper{repo: g.repo, logger: g.logger}
-}
-
-func (h *RsaHelper) Err() error {
-	return h.err
-}
-
-func (g *RsaUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error) {
+func (g *PubUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error) {
 	if len(requestId) == 0 {
 		return nil, errors.New("empty requestId for fetch rsa key")
 	}
 
 	requestId = g.solveId(requestId)
-	obj, err := g.repo.Fetch(requestId)
+	obj, err := g.repo.FetchRsaObj(requestId)
 	if err != nil {
 		return nil, err
 	}
 
 	if obj == nil {
-		gen := &generator{global.bits, true, time.Duration(-1)}
+		rg := &rsaGenerator{rsaGlobal.bits, true, time.Duration(-1)}
 		for _, opt := range opts {
-			opt(gen)
+			opt(rg)
 		}
 
-		if !gen.renew {
+		if !rg.renew {
 			return nil, status.Errorf(codes.NotFound, "can't find rsaObj")
 		}
 
-		gen.init()
-		obj, err = gen.genRsaObj()
+		rg.init()
+		obj, err = rg.genRsaObj()
 		if err != nil {
 			return nil, err
 		}
 
-		err = g.repo.Store(requestId, gen.expiration, obj)
+		err = g.repo.StoreRsaObj(requestId, rg.expiration, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -79,11 +68,24 @@ func (g *RsaUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error)
 	return obj, nil
 }
 
-func (g *RsaUsecase) solveId(requestId string) string {
-	if len(global.prefix) > 0 {
+func (g *PubUsecase) FetchUniqueId(ttl time.Duration) (string, error) {
+	uniqueId, err := nanoid.New()
+	if err != nil {
+		return "", err
+	}
+	err = g.repo.StoreUniqueId(uniqueId, ttl)
+	return uniqueId, err
+}
+
+func (g *PubUsecase) ValidateUniqueId(uniqueId string) bool {
+	return g.repo.UniqueIdExists(uniqueId)
+}
+
+func (g *PubUsecase) solveId(requestId string) string {
+	if len(rsaGlobal.prefix) > 0 {
 		requestId = strings.TrimPrefix(requestId, ":")
 	}
-	requestId = global.prefix + requestId
+	requestId = rsaGlobal.prefix + requestId
 	return requestId
 }
 
@@ -128,19 +130,19 @@ func (o *RsaObj) Decrypt(ciphertext []byte) ([]byte, error) {
 	return rsa.DecryptPKCS1v15(rand.Reader, private, ciphertext)
 }
 
-// globalOption is using default option
-type globalOption struct {
+// rsaGlobalOption is using default option
+type rsaGlobalOption struct {
 	prefix     string
 	bits       int
 	expiration time.Duration
 }
 
 func SetRsaBits(bits int) {
-	global.bits = bits
+	rsaGlobal.bits = bits
 }
 
 func SetRsaExpiration(expiration time.Duration) {
-	global.expiration = expiration
+	rsaGlobal.expiration = expiration
 }
 
 // SetRsaKeyPrefix settings the redis cached rsa key prefix
@@ -148,13 +150,13 @@ func SetRsaKeyPrefix(prefix string) {
 	if len(prefix) > 0 && !strings.HasSuffix(prefix, ":") {
 		prefix += ":"
 	}
-	global.prefix = prefix
+	rsaGlobal.prefix = prefix
 }
 
-type Option func(*generator)
+type Option func(*rsaGenerator)
 
 func WithRsaBits(bits int) Option {
-	return func(g *generator) {
+	return func(g *rsaGenerator) {
 		g.bits = bits
 	}
 }
@@ -162,36 +164,36 @@ func WithRsaBits(bits int) Option {
 // WithRsaExpiration settings the global rsa expiration
 // Zero expiration means the key has no expiration time.
 func WithRsaExpiration(expiration time.Duration) Option {
-	return func(g *generator) {
+	return func(g *rsaGenerator) {
 		g.expiration = expiration
 	}
 }
 
 // WithRsaNoGen when the requestId is not exist don't create
-func WithRsaNoGen(g *generator) {
+func WithRsaNoGen(g *rsaGenerator) {
 	g.renew = false
 }
 
-var global = &globalOption{bits: 1024, expiration: time.Minute * 10}
+var rsaGlobal = &rsaGlobalOption{bits: 1024, expiration: time.Minute * 10}
 
-// generator create a rsa key
-type generator struct {
+// rsaGenerator create a rsa key
+type rsaGenerator struct {
 	bits       int
 	renew      bool
 	expiration time.Duration
 }
 
-func (g *generator) init() {
+func (g *rsaGenerator) init() {
 	if g.bits <= 0 {
-		g.bits = global.bits
+		g.bits = rsaGlobal.bits
 	}
 	if g.expiration < 0 {
-		g.expiration = global.expiration
+		g.expiration = rsaGlobal.expiration
 	}
 }
 
 // genRsaObj generated rsa private and public key
-func (g *generator) genRsaObj() (*RsaObj, error) {
+func (g *rsaGenerator) genRsaObj() (*RsaObj, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, g.bits)
 	if err != nil {
 		return nil, err

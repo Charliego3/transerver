@@ -24,7 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RsaServiceClient interface {
-	PublicKey(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.BytesValue, error)
+	PublicKey(ctx context.Context, in *RsaRequest, opts ...grpc.CallOption) (*wrapperspb.BytesValue, error)
+	Unique(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.StringValue, error)
 }
 
 type rsaServiceClient struct {
@@ -35,9 +36,18 @@ func NewRsaServiceClient(cc grpc.ClientConnInterface) RsaServiceClient {
 	return &rsaServiceClient{cc}
 }
 
-func (c *rsaServiceClient) PublicKey(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.BytesValue, error) {
+func (c *rsaServiceClient) PublicKey(ctx context.Context, in *RsaRequest, opts ...grpc.CallOption) (*wrapperspb.BytesValue, error) {
 	out := new(wrapperspb.BytesValue)
 	err := c.cc.Invoke(ctx, "/org.github.transerver.accounts.RsaService/PublicKey", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rsaServiceClient) Unique(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*wrapperspb.StringValue, error) {
+	out := new(wrapperspb.StringValue)
+	err := c.cc.Invoke(ctx, "/org.github.transerver.accounts.RsaService/Unique", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,7 +58,8 @@ func (c *rsaServiceClient) PublicKey(ctx context.Context, in *emptypb.Empty, opt
 // All implementations must embed UnimplementedRsaServiceServer
 // for forward compatibility
 type RsaServiceServer interface {
-	PublicKey(context.Context, *emptypb.Empty) (*wrapperspb.BytesValue, error)
+	PublicKey(context.Context, *RsaRequest) (*wrapperspb.BytesValue, error)
+	Unique(context.Context, *emptypb.Empty) (*wrapperspb.StringValue, error)
 	mustEmbedUnimplementedRsaServiceServer()
 }
 
@@ -56,8 +67,11 @@ type RsaServiceServer interface {
 type UnimplementedRsaServiceServer struct {
 }
 
-func (UnimplementedRsaServiceServer) PublicKey(context.Context, *emptypb.Empty) (*wrapperspb.BytesValue, error) {
+func (UnimplementedRsaServiceServer) PublicKey(context.Context, *RsaRequest) (*wrapperspb.BytesValue, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublicKey not implemented")
+}
+func (UnimplementedRsaServiceServer) Unique(context.Context, *emptypb.Empty) (*wrapperspb.StringValue, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unique not implemented")
 }
 func (UnimplementedRsaServiceServer) mustEmbedUnimplementedRsaServiceServer() {}
 
@@ -73,7 +87,7 @@ func RegisterRsaServiceServer(s grpc.ServiceRegistrar, srv RsaServiceServer) {
 }
 
 func _RsaService_PublicKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(RsaRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -85,7 +99,25 @@ func _RsaService_PublicKey_Handler(srv interface{}, ctx context.Context, dec fun
 		FullMethod: "/org.github.transerver.accounts.RsaService/PublicKey",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RsaServiceServer).PublicKey(ctx, req.(*emptypb.Empty))
+		return srv.(RsaServiceServer).PublicKey(ctx, req.(*RsaRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RsaService_Unique_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RsaServiceServer).Unique(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/org.github.transerver.accounts.RsaService/Unique",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RsaServiceServer).Unique(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -100,6 +132,10 @@ var RsaService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PublicKey",
 			Handler:    _RsaService_PublicKey_Handler,
+		},
+		{
+			MethodName: "Unique",
+			Handler:    _RsaService_Unique_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

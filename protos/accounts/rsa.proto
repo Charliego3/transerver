@@ -8,9 +8,20 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
 
 service RsaService {
-  rpc PublicKey(google.protobuf.Empty) returns (google.protobuf.BytesValue) {
+  rpc PublicKey(RsaRequest) returns (google.protobuf.BytesValue) {
     option (google.api.http) =  {
-      get: "/rsa/v1/getPublicKey"
+      get: "/rsa/v1/pubkey/{action}/{unique}"
     };
   }
+
+  rpc Unique(google.protobuf.Empty) returns (google.protobuf.StringValue) {
+    option (google.api.http) = {
+      get: "/unique"
+    };
+  }
+}
+
+message RsaRequest {
+  string action = 1; // action is the name of the route to be operated next
+  string unique = 2;
 }

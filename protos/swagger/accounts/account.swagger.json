@@ -86,13 +86,23 @@
       "type": "object"
     },
     "accountsLoginRequest": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "unique": {
+          "type": "string"
+        }
+      }
     },
     "accountsRegisterReply": {
       "type": "object"
     },
     "accountsRegisterRequest": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "unique": {
+          "type": "string"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",
