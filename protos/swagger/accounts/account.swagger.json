@@ -90,6 +90,19 @@
       "properties": {
         "unique": {
           "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "uname": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },
@@ -101,6 +114,25 @@
       "properties": {
         "unique": {
           "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "uname": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string",
+          "format": "byte"
         }
       }
     },

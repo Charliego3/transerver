@@ -4,13 +4,13 @@ import (
 	"github.com/soheilhy/cmux"
 	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/gs"
-	"github.com/transerver/commons/hs"
+	"github.com/transerver/commons/gw"
 	"go.uber.org/zap"
 	"net"
 )
 
 type App struct {
-	hs *hs.Server
+	hs *gw.Server
 	gs *gs.Server
 	bs configs.IConfig
 	lg *zap.Logger
@@ -19,7 +19,7 @@ type App struct {
 func NewApp(
 	bs configs.IConfig,
 	lg *zap.Logger,
-	hs *hs.Server,
+	hs *gw.Server,
 	gs *gs.Server,
 ) *App {
 	return &App{bs: bs, lg: lg, hs: hs, gs: gs}
@@ -42,6 +42,10 @@ func (app *App) Run() {
 	if err := mux.Serve(); err != nil {
 		app.lg.Panic("app serve error", zap.Error(err))
 	}
+}
+
+func (app *App) RunGateway() {
+
 }
 
 func (app *App) serve(fn func(lis net.Listener) error, lis net.Listener) {

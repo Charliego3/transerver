@@ -8,3 +8,6 @@ import (
 
 // Account is the predicate function for account builders.
 type Account func(*sql.Selector)
+
+// Region is the predicate function for region builders.
+type Region func(*sql.Selector)

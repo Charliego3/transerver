@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.7
-// source: accounts/rsa.proto
+// source: accounts/pub.proto
 
 package acctspb
 
@@ -139,5 +139,5 @@ var RsaService_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "accounts/rsa.proto",
+	Metadata: "accounts/pub.proto",
 }

@@ -16,7 +16,7 @@ import (
 	"github.com/transerver/commons"
 	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/gs"
-	"github.com/transerver/commons/hs"
+	"github.com/transerver/commons/gw"
 	"github.com/transerver/commons/logger"
 	"google.golang.org/grpc"
 )
@@ -38,14 +38,17 @@ func wireApp() (*commons.App, func(), error) {
 		return nil, nil, err
 	}
 	accountRepo := data.NewAccountRepo(dataData, zapLogger)
-	accountUsecase := biz.NewAccountUsecase(accountRepo, zapLogger)
-	rsaRepo := data.NewRsaRepo(dataData, zapLogger)
-	rsaUsecase := biz.NewRsaUsecase(rsaRepo, zapLogger)
-	accountService := service.NewAccountService(accountUsecase, rsaUsecase, zapLogger)
-	rsaService := service.NewRsaService(rsaUsecase, zapLogger)
-	v3 := service.MakeServices(accountService, rsaService)
+	regionRepo := data.NewRegionRepo(dataData, zapLogger)
+	accountUsecase := biz.NewAccountUsecase(accountRepo, regionRepo, zapLogger)
+	pubRepo := data.NewRsaRepo(dataData, zapLogger)
+	pubUsecase := biz.NewRsaUsecase(pubRepo, zapLogger)
+	accountService := service.NewAccountService(accountUsecase, pubUsecase, zapLogger)
+	pubService := service.NewRsaService(pubUsecase, zapLogger)
+	regionUsecase := biz.NewRegionUsecase(regionRepo, zapLogger)
+	regionService := service.NewRegionService(regionUsecase, zapLogger)
+	v3 := service.MakeServices(accountService, pubService, regionService)
 	v4 := NewHTTPOptions()
-	server, err := hs.NewHTTPServer(zapLogger, v3, v4...)
+	server, err := gw.NewGatewayServer(zapLogger, v3, v4...)
 	if err != nil {
 		cleanup2()
 		cleanup()

@@ -4,6 +4,7 @@ use (
 	./accounts
 	./cli
 	./commons
+	./gateway
 	./protos
 	./utils
 )

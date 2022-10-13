@@ -1,4 +1,4 @@
-package hs
+package gw
 
 import "github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 

@@ -1,4 +1,4 @@
-package hs
+package gw
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func (s *Server) Watch(_ context.Context, _ *grpc_health_v1.HealthCheckRequest, 
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
-func NewHTTPServer(logger *zap.Logger, services []service.Service, opts ...Option) (*Server, error) {
+func NewGatewayServer(logger *zap.Logger, services []service.Service, opts ...Option) (*Server, error) {
 	hs := &Server{logger: logger.Sugar()}
 	hs.muxOpts = []runtime.ServeMuxOption{
 		runtime.WithMarshalerOption("application/json", NewJSONMarshaller()),
@@ -73,6 +73,10 @@ func NewHTTPServer(logger *zap.Logger, services []service.Service, opts ...Optio
 	return hs, nil
 }
 
+func (s *Server) Run() {
+
+}
+
 func (s *Server) auth(
 	mux *runtime.ServeMux,
 	routers map[string]struct{},
@@ -83,7 +87,6 @@ func (s *Server) auth(
 		return false
 	}
 
-	_, outbound := runtime.MarshalerForRequest(mux, r)
 	if _, ok := routers[r.URL.Path]; !ok {
 		return false
 	}
@@ -93,6 +96,7 @@ func (s *Server) auth(
 		return false
 	}
 
+	_, outbound := runtime.MarshalerForRequest(mux, r)
 	buf, err := outbound.Marshal(err)
 	if err != nil {
 		buf = []byte(fallback)

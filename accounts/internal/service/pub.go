@@ -6,6 +6,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/protos/acctspb"
+	"github.com/transerver/utils"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -36,7 +37,26 @@ func (g *PubService) Routers() ([]string, []string) {
 	return nil, nil
 }
 
-func (g *PubService) PublicKey(_ context.Context, req *acctspb.RsaRequest) (*wrapperspb.BytesValue, error) {
+func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*wrapperspb.BytesValue, error) {
+	if req.G {
+		uniqueId, err := g.Unique(ctx, nil)
+		if err != nil {
+			return nil, err
+		}
+		req.Unique = uniqueId.Value
+	}
+
+	err := req.Validate()
+	if err != nil {
+		return nil, utils.ErrorArgument(err)
+	}
+
+	if !req.G {
+		if err = g.usecase.ValidateUniqueId(req.GetUnique()); err != nil {
+			return nil, err
+		}
+	}
+
 	requestId := fmt.Sprintf("%s:%s", req.GetAction(), req.GetUnique())
 	obj, err := g.usecase.FetchObj(requestId)
 	if err != nil {

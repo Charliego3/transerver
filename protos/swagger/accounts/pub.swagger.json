@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "accounts/rsa.proto",
+    "title": "accounts/pub.proto",
     "version": "version not set"
   },
   "tags": [
@@ -46,6 +46,12 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "g",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "tags": [

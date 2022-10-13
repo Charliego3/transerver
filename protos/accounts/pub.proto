@@ -6,6 +6,7 @@ option go_package = "github.com/transerver/protos/acctspb";
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
 import "google/protobuf/wrappers.proto";
+import "validate/validate.proto";
 
 service RsaService {
   rpc PublicKey(RsaRequest) returns (google.protobuf.BytesValue) {
@@ -22,6 +23,7 @@ service RsaService {
 }
 
 message RsaRequest {
-  string action = 1; // action is the name of the route to be operated next
-  string unique = 2;
+  string action = 1 [(validate.rules).string.pattern = "[A-Za-z]+"]; // action is the name of the route to be operated next
+  string unique = 2 [(validate.rules).string.pattern = "[A-Za-z0-9_-]+"];
+  bool g = 3;
 }

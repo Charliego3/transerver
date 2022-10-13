@@ -6,6 +6,7 @@ require (
 	entgo.io/ent v0.11.3
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/google/wire v0.5.0
+	github.com/gookit/goutil v0.5.12
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
 	github.com/json-iterator/go v1.1.12
 	github.com/lib/pq v1.10.7
@@ -37,6 +38,6 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af // indirect
 	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.3.8 // indirect
 	google.golang.org/genproto v0.0.0-20221010155953-15ba04fc1c0e // indirect
 )

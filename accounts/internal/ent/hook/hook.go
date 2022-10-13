@@ -22,6 +22,19 @@ func (f AccountFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The RegionFunc type is an adapter to allow the use of ordinary
+// function as Region mutator.
+type RegionFunc func(context.Context, *ent.RegionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f RegionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.RegionMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.RegionMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

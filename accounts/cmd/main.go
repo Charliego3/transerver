@@ -8,7 +8,7 @@ import (
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
 	"github.com/transerver/commons/configs"
-	"github.com/transerver/commons/hs"
+	"github.com/transerver/commons/gw"
 	"io"
 	"net/http"
 )
@@ -39,9 +39,9 @@ func NewCfgOpts() []configs.Option {
 	}
 }
 
-func NewHTTPOptions() []hs.Option {
-	return []hs.Option{
-		hs.WithAuthFunc(func(r *http.Request) error {
+func NewHTTPOptions() []gw.Option {
+	return []gw.Option{
+		gw.WithAuthFunc(func(r *http.Request) error {
 			return errors.New("auth not pass")
 		}),
 	}

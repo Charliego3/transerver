@@ -4,6 +4,7 @@ package org.github.transerver.accounts;
 option go_package = "github.com/transerver/protos/acctspb";
 
 import "google/api/annotations.proto";
+import "validate/validate.proto";
 
 service AccountService {
   rpc Register(RegisterRequest) returns (RegisterReply) {
@@ -22,7 +23,13 @@ service AccountService {
 }
 
 message RegisterRequest {
-  string unique = 1;
+  string unique = 1 [(validate.rules).string.pattern = "[A-Za-z0-9_-]+"];
+  string region = 2 [(validate.rules).string = {pattern: "[A-Z]{2,}"}];
+  string uname = 3 [(validate.rules).string = {ignore_empty: true, min_bytes: 5, max_bytes: 20}];
+  string phone = 4 [(validate.rules).string = {ignore_empty: true, pattern: "[0-9]+"}];
+  string email = 5 [(validate.rules).string = {ignore_empty: true, email: true}];
+  string code = 6 [(validate.rules).string.len = 6];
+  bytes password = 7 [(validate.rules).bytes.ignore_empty = false];
 }
 
 message RegisterReply {
@@ -31,6 +38,10 @@ message RegisterReply {
 
 message LoginRequest {
   string unique = 1;
+  string region = 2;
+  string uname = 3;
+  string code = 4;
+  bytes password = 5;
 }
 
 message LoginReply {

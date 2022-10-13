@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"errors"
+	"github.com/gookit/goutil/strutil"
 	json "github.com/json-iterator/go"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	"go.uber.org/zap"
@@ -77,8 +78,11 @@ func (g *PubUsecase) FetchUniqueId(ttl time.Duration) (string, error) {
 	return uniqueId, err
 }
 
-func (g *PubUsecase) ValidateUniqueId(uniqueId string) bool {
-	return g.repo.UniqueIdExists(uniqueId)
+func (g *PubUsecase) ValidateUniqueId(uniqueId string) error {
+	if strutil.IsBlank(uniqueId) || !g.repo.UniqueIdExists(uniqueId) {
+		return status.Error(codes.ResourceExhausted, "Timed out, please refresh the page and try again!")
+	}
+	return nil
 }
 
 func (g *PubUsecase) solveId(requestId string) string {

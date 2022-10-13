@@ -18,9 +18,24 @@ var (
 		Columns:    AccountsColumns,
 		PrimaryKey: []*schema.Column{AccountsColumns[0]},
 	}
+	// RegionsColumns holds the columns for the "regions" table.
+	RegionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "code", Type: field.TypeString},
+		{Name: "area", Type: field.TypeString},
+		{Name: "img", Type: field.TypeString},
+		{Name: "name", Type: field.TypeJSON},
+	}
+	// RegionsTable holds the schema information for the "regions" table.
+	RegionsTable = &schema.Table{
+		Name:       "regions",
+		Columns:    RegionsColumns,
+		PrimaryKey: []*schema.Column{RegionsColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		AccountsTable,
+		RegionsTable,
 	}
 )
 
