@@ -7,23 +7,18 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/accounts/internal/conf"
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
-	"github.com/transerver/commons"
 	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/gs"
-	"github.com/transerver/commons/gw"
 	"github.com/transerver/commons/logger"
-	"google.golang.org/grpc"
 )
 
 // Injectors from wire.go:
 
-func wireApp() (*commons.App, func(), error) {
+func wireApp() (*gs.Server, func(), error) {
 	v := conf.NewBootstrap()
 	v2 := NewCfgOpts()
 	iConfig, err := configs.Parse(v, v2...)
@@ -47,31 +42,11 @@ func wireApp() (*commons.App, func(), error) {
 	regionUsecase := biz.NewRegionUsecase(regionRepo, zapLogger)
 	regionService := service.NewRegionService(regionUsecase, zapLogger)
 	v3 := service.MakeServices(accountService, pubService, regionService)
-	v4 := NewHTTPOptions()
-	server, err := gw.NewGatewayServer(zapLogger, v3, v4...)
-	if err != nil {
-		cleanup2()
-		cleanup()
-		return nil, nil, err
-	}
-	v5 := NewGRPCOpts()
-	gsServer, cleanup3 := gs.NewGRPCServer(zapLogger, v3, v5...)
-	app := commons.NewApp(iConfig, zapLogger, server, gsServer)
-	return app, func() {
+	v4 := NewGRPCOpts()
+	server, cleanup3 := gs.NewGRPCServer(zapLogger, iConfig, v3, v4...)
+	return server, func() {
 		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil
-}
-
-// wire.go:
-
-func NewGRPCOpts() []gs.Option {
-	return []gs.Option{gs.WithAuthFunc(func(ctx context.Context) (context.Context, error) {
-		if method, ok := grpc.Method(ctx); ok {
-			fmt.Println("GRPC Method:", method)
-		}
-		return ctx, nil
-	}),
-	}
 }

@@ -8,6 +8,7 @@ import (
 
 type RegionRepo interface {
 	FindByCode(ctx context.Context, code string) (*ent.Region, error)
+	All(ctx context.Context, lang string) (ent.Regions, error)
 }
 
 type RegionUsecase struct {
@@ -31,4 +32,8 @@ func (g *RegionUsecase) Helper() *RegionHelper {
 
 func (h *RegionHelper) Err() error {
 	return h.err
+}
+
+func (g *RegionUsecase) Regions(ctx context.Context) (ent.Regions, error) {
+	return g.repo.All(ctx, "")
 }

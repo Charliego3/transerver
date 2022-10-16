@@ -2,14 +2,15 @@ package biz
 
 import (
 	"bytes"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"github.com/gookit/goutil/strutil"
 	json "github.com/json-iterator/go"
 	nanoid "github.com/matoous/go-nanoid/v2"
+	"github.com/transerver/commons/errors"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,10 +19,10 @@ import (
 )
 
 type PubRepo interface {
-	FetchRsaObj(string) (*RsaObj, error)
-	StoreRsaObj(string, time.Duration, *RsaObj) error
-	UniqueIdExists(string) bool
-	StoreUniqueId(string, time.Duration) error
+	FetchRsaObj(context.Context, string) (*RsaObj, error)
+	StoreRsaObj(context.Context, string, time.Duration, *RsaObj) error
+	UniqueIdExists(context.Context, string) bool
+	StoreUniqueId(context.Context, string, time.Duration) error
 }
 
 type PubUsecase struct {
@@ -34,13 +35,13 @@ func NewRsaUsecase(repo PubRepo, logger *zap.Logger) *PubUsecase {
 	return &PubUsecase{repo: repo, logger: logger}
 }
 
-func (g *PubUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error) {
+func (g *PubUsecase) FetchObj(ctx context.Context, requestId string, opts ...Option) (*RsaObj, error) {
 	if len(requestId) == 0 {
 		return nil, errors.New("empty requestId for fetch rsa key")
 	}
 
 	requestId = g.solveId(requestId)
-	obj, err := g.repo.FetchRsaObj(requestId)
+	obj, err := g.repo.FetchRsaObj(ctx, requestId)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +62,7 @@ func (g *PubUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error)
 			return nil, err
 		}
 
-		err = g.repo.StoreRsaObj(requestId, rg.expiration, obj)
+		err = g.repo.StoreRsaObj(ctx, requestId, rg.expiration, obj)
 		if err != nil {
 			return nil, err
 		}
@@ -69,18 +70,19 @@ func (g *PubUsecase) FetchObj(requestId string, opts ...Option) (*RsaObj, error)
 	return obj, nil
 }
 
-func (g *PubUsecase) FetchUniqueId(ttl time.Duration) (string, error) {
+func (g *PubUsecase) FetchUniqueId(ctx context.Context, ttl time.Duration) (string, error) {
 	uniqueId, err := nanoid.New()
 	if err != nil {
 		return "", err
 	}
-	err = g.repo.StoreUniqueId(uniqueId, ttl)
+	err = g.repo.StoreUniqueId(ctx, uniqueId, ttl)
 	return uniqueId, err
 }
 
-func (g *PubUsecase) ValidateUniqueId(uniqueId string) error {
-	if strutil.IsBlank(uniqueId) || !g.repo.UniqueIdExists(uniqueId) {
-		return status.Error(codes.ResourceExhausted, "Timed out, please refresh the page and try again!")
+func (g *PubUsecase) ValidateUniqueId(ctx context.Context, uniqueId string) error {
+	if strutil.IsBlank(uniqueId) || !g.repo.UniqueIdExists(ctx, uniqueId) {
+		return errors.New("Timed out, please refresh the page and try again!",
+			errors.WithCode(codes.ResourceExhausted))
 	}
 	return nil
 }

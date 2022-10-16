@@ -1,0 +1,2 @@
+InvalidArgument: "{{.}} 参数验证失败"
+RegionNotFound: "未找到区域: [{{.}}]"

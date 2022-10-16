@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/field"
 )
 
@@ -17,9 +18,11 @@ func (Region) Fields() []ent.Field {
 		field.String("area").StructTag(`json:"area,omitempty"`),
 		field.String("img").StructTag(`json:"img,omitempty"`),
 		field.JSON("name", struct {
-			En string
-			Zh string
-		}{}),
+			En string `json:"en"`
+			Zh string `json:"zh"`
+		}{}).SchemaType(map[string]string{
+			dialect.Postgres: "json",
+		}),
 	}
 }
 

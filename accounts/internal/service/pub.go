@@ -3,10 +3,9 @@ package service
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/accounts/internal/biz"
+	"github.com/transerver/commons/errors"
 	"github.com/transerver/protos/acctspb"
-	"github.com/transerver/utils"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -29,14 +28,6 @@ func (g *PubService) RegisterGRPC(s *grpc.Server) {
 	acctspb.RegisterRsaServiceServer(s, g)
 }
 
-func (g *PubService) RegisterHTTP(s *runtime.ServeMux) error {
-	return acctspb.RegisterRsaServiceHandlerServer(context.Background(), s, g)
-}
-
-func (g *PubService) Routers() ([]string, []string) {
-	return nil, nil
-}
-
 func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*wrapperspb.BytesValue, error) {
 	if req.G {
 		uniqueId, err := g.Unique(ctx, nil)
@@ -48,17 +39,17 @@ func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*w
 
 	err := req.Validate()
 	if err != nil {
-		return nil, utils.ErrorArgument(err)
+		return nil, errors.ErrorArgument(ctx, err)
 	}
 
 	if !req.G {
-		if err = g.usecase.ValidateUniqueId(req.GetUnique()); err != nil {
+		if err = g.usecase.ValidateUniqueId(ctx, req.GetUnique()); err != nil {
 			return nil, err
 		}
 	}
 
 	requestId := fmt.Sprintf("%s:%s", req.GetAction(), req.GetUnique())
-	obj, err := g.usecase.FetchObj(requestId)
+	obj, err := g.usecase.FetchObj(ctx, requestId)
 	if err != nil {
 		return nil, err
 	}
@@ -66,8 +57,8 @@ func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*w
 	return &wrapperspb.BytesValue{Value: obj.Public}, nil
 }
 
-func (g *PubService) Unique(context.Context, *emptypb.Empty) (*wrapperspb.StringValue, error) {
-	uniqueId, err := g.usecase.FetchUniqueId(time.Minute * 10)
+func (g *PubService) Unique(ctx context.Context, _ *emptypb.Empty) (*wrapperspb.StringValue, error) {
+	uniqueId, err := g.usecase.FetchUniqueId(ctx, time.Minute*10)
 	if err != nil {
 		return nil, err
 	}

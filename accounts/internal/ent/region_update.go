@@ -47,8 +47,8 @@ func (ru *RegionUpdate) SetImg(s string) *RegionUpdate {
 
 // SetName sets the "name" field.
 func (ru *RegionUpdate) SetName(s struct {
-	En string
-	Zh string
+	En string "json:\"en\""
+	Zh string "json:\"zh\""
 }) *RegionUpdate {
 	ru.mutation.SetName(s)
 	return ru
@@ -198,8 +198,8 @@ func (ruo *RegionUpdateOne) SetImg(s string) *RegionUpdateOne {
 
 // SetName sets the "name" field.
 func (ruo *RegionUpdateOne) SetName(s struct {
-	En string
-	Zh string
+	En string "json:\"en\""
+	Zh string "json:\"zh\""
 }) *RegionUpdateOne {
 	ruo.mutation.SetName(s)
 	return ruo

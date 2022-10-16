@@ -10,7 +10,7 @@ import (
 type Config struct {
 	paths  []string
 	source []byte
-	reader io.ReadCloser
+	reader io.Reader
 	err    error // error with load content, fail fast
 }
 
@@ -22,7 +22,7 @@ func (c *Config) unmarshal(buf []byte, target any) {
 	c.err = yaml.Unmarshal(buf, target)
 }
 
-func (c *Config) readFile(pidx int) ([]byte, bool) {
+func (c *Config) readf(pidx int) ([]byte, bool) {
 	if c.err != nil || len(c.paths)-1 > pidx {
 		return nil, false
 	}
@@ -35,7 +35,7 @@ func (c *Config) readFile(pidx int) ([]byte, bool) {
 	return buf, true
 }
 
-func (c *Config) readReader() []byte {
+func (c *Config) readr() []byte {
 	if c.err != nil || c.reader == nil {
 		return nil
 	}
@@ -61,9 +61,6 @@ func ParseWithoutOpts(bootstrap any) (IConfig, error) {
 
 // Parse bind config source to IConfig instance
 // bootstrap must be implemented IConfig interface
-// 1: load from etcd
-// 2: load from source option
-// 3: load from yaml file
 func Parse(bootstrap any, opts ...Option) (IConfig, error) {
 	if bootstrap == nil {
 		return nil, fmt.Errorf("config.IConfig target is nil")
@@ -79,9 +76,9 @@ func Parse(bootstrap any, opts ...Option) (IConfig, error) {
 	}
 
 	cfg.unmarshal(cfg.source, bootstrap)
-	cfg.unmarshal(cfg.readReader(), bootstrap)
+	cfg.unmarshal(cfg.readr(), bootstrap)
 	for i := range cfg.paths {
-		if buf, ok := cfg.readFile(i); ok {
+		if buf, ok := cfg.readf(i); ok {
 			cfg.unmarshal(buf, bootstrap)
 		}
 	}

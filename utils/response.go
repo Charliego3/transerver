@@ -2,26 +2,23 @@ package utils
 
 import (
 	json "github.com/json-iterator/go"
-	"google.golang.org/grpc/codes"
+	"net/http"
 )
 
-type Error struct {
-}
-
 type ResponseEntity interface {
-	Code() codes.Code
+	Code() int
 	Error() string
 	Marshal() ([]byte, error)
 	MarshalIdent() ([]byte, error)
 }
 
 type re struct {
-	Codes   codes.Code `json:"code"`
-	Msg     string     `json:"message"`
-	Payload any        `json:"payload,omitempty"`
+	Codes   int    `json:"code"`
+	Msg     string `json:"message"`
+	Payload any    `json:"payload,omitempty"`
 }
 
-func (r re) Code() codes.Code {
+func (r re) Code() int {
 	return r.Codes
 }
 
@@ -37,10 +34,10 @@ func (r re) MarshalIdent() ([]byte, error) {
 	return json.MarshalIndent(r, "", "    ")
 }
 
-func NewErrResponse(code codes.Code, msg string) ResponseEntity {
+func NewErrResponse(code int, msg string) ResponseEntity {
 	return &re{Codes: code, Msg: msg}
 }
 
 func NewResponse(payload any) ResponseEntity {
-	return &re{Codes: codes.OK, Msg: "OK", Payload: payload}
+	return &re{Codes: http.StatusOK, Msg: "OK", Payload: payload}
 }

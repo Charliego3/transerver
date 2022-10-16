@@ -1,7 +1,8 @@
 package gs
 
 import (
-	"context"
+	"github.com/Charliego93/go-i18n/v2"
+	"github.com/golang/glog"
 	gm "github.com/grpc-ecosystem/go-grpc-middleware"
 	ga "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	gz "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -9,14 +10,16 @@ import (
 	gc "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	gt "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	gp "github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/transerver/commons/service"
+	"github.com/transerver/commons/configs"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
+	"net"
 )
 
 type Server struct {
 	*grpc.Server
 
+	bootstrap  configs.IConfig
 	streamOpts []grpc.StreamServerInterceptor
 	unaryOpts  []grpc.UnaryServerInterceptor
 	serverOpts []grpc.ServerOption
@@ -24,11 +27,12 @@ type Server struct {
 	tracingOpt []gt.Option
 	loggerOpts []gz.Option
 	recoverOpt []gr.Option
+	i18nOpts   []i18n.Option
 	authFunc   ga.AuthFunc
 }
 
-func NewGRPCServer(logger *zap.Logger, services []service.Service, opts ...Option) (*Server, func()) {
-	gs := &Server{}
+func NewGRPCServer(logger *zap.Logger, bootstrap configs.IConfig, services []Service, opts ...Option) (*Server, func()) {
+	gs := &Server{bootstrap: bootstrap}
 	for _, opt := range opts {
 		opt(gs)
 	}
@@ -50,26 +54,8 @@ func NewGRPCServer(logger *zap.Logger, services []service.Service, opts ...Optio
 	)
 
 	if gs.authFunc != nil {
-		routes := make(map[string]struct{})
-		for _, s := range services {
-			rs, _ := s.Routers()
-			for _, r := range rs {
-				routes[r] = struct{}{}
-			}
-		}
-
-		fn := ga.AuthFunc(func(ctx context.Context) (context.Context, error) {
-			if method, ok := grpc.Method(ctx); !ok {
-				return ctx, nil
-			} else if _, ok := routes[method]; !ok {
-				return ctx, nil
-			}
-
-			return gs.authFunc(ctx)
-		})
-
-		gs.streamOpts = append(gs.streamOpts, ga.StreamServerInterceptor(fn))
-		gs.unaryOpts = append(gs.unaryOpts, ga.UnaryServerInterceptor(fn))
+		gs.streamOpts = append(gs.streamOpts, ga.StreamServerInterceptor(gs.authFunc))
+		gs.unaryOpts = append(gs.unaryOpts, ga.UnaryServerInterceptor(gs.authFunc))
 	}
 
 	gs.serverOpts = append(gs.serverOpts,
@@ -81,5 +67,21 @@ func NewGRPCServer(logger *zap.Logger, services []service.Service, opts ...Optio
 	for _, s := range services {
 		s.RegisterGRPC(gs.Server)
 	}
+
+	i18n.Initialize(gs.i18nOpts...)
 	return gs, gs.GracefulStop
+}
+
+func (s *Server) Run() error {
+	l, err := net.Listen("tcp", s.bootstrap.Addr())
+	if err != nil {
+		return err
+	}
+	defer func() {
+		s.GracefulStop()
+		if err := l.Close(); err != nil {
+			glog.Errorf("Failed to close %s %s: %v", "tcp", s.bootstrap.Addr(), err)
+		}
+	}()
+	return s.Serve(l)
 }

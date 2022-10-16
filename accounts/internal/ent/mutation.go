@@ -286,8 +286,8 @@ type RegionMutation struct {
 	area *string
 	img  *string
 	name *struct {
-		En string
-		Zh string
+		En string "json:\"en\""
+		Zh string "json:\"zh\""
 	}
 	clearedFields map[string]struct{}
 	done          bool
@@ -503,16 +503,16 @@ func (m *RegionMutation) ResetImg() {
 
 // SetName sets the "name" field.
 func (m *RegionMutation) SetName(s struct {
-	En string
-	Zh string
+	En string "json:\"en\""
+	Zh string "json:\"zh\""
 }) {
 	m.name = &s
 }
 
 // Name returns the value of the "name" field in the mutation.
 func (m *RegionMutation) Name() (r struct {
-	En string
-	Zh string
+	En string "json:\"en\""
+	Zh string "json:\"zh\""
 }, exists bool) {
 	v := m.name
 	if v == nil {
@@ -525,8 +525,8 @@ func (m *RegionMutation) Name() (r struct {
 // If the Region object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *RegionMutation) OldName(ctx context.Context) (v struct {
-	En string
-	Zh string
+	En string "json:\"en\""
+	Zh string "json:\"zh\""
 }, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldName is only allowed on UpdateOne operations")
@@ -643,8 +643,8 @@ func (m *RegionMutation) SetField(name string, value ent.Value) error {
 		return nil
 	case region.FieldName:
 		v, ok := value.(struct {
-			En string
-			Zh string
+			En string "json:\"en\""
+			Zh string "json:\"zh\""
 		})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)

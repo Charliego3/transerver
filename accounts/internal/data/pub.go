@@ -2,9 +2,9 @@ package data
 
 import (
 	"context"
-	"errors"
 	"github.com/go-redis/redis/v9"
 	"github.com/transerver/accounts/internal/biz"
+	"github.com/transerver/commons/errors"
 	"go.uber.org/zap"
 	"time"
 )
@@ -20,8 +20,8 @@ func NewRsaRepo(data *Data, logger *zap.Logger) biz.PubRepo {
 	return &pubRepo{Data: data, logger: logger}
 }
 
-func (g *pubRepo) FetchRsaObj(requestId string) (*biz.RsaObj, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*30)
+func (g *pubRepo) FetchRsaObj(ctx context.Context, requestId string) (*biz.RsaObj, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
 	defer cancel()
 	cmd := g.redis.Get(ctx, requestId)
 	if cmd.Err() == redis.Nil {
@@ -35,8 +35,8 @@ func (g *pubRepo) FetchRsaObj(requestId string) (*biz.RsaObj, error) {
 	return rsaObj, err
 }
 
-func (g *pubRepo) StoreRsaObj(requestId string, expiration time.Duration, obj *biz.RsaObj) error {
-	status, err := g.redis.Set(context.Background(), requestId, obj, expiration).Result()
+func (g *pubRepo) StoreRsaObj(ctx context.Context, requestId string, expiration time.Duration, obj *biz.RsaObj) error {
+	status, err := g.redis.Set(ctx, requestId, obj, expiration).Result()
 	if err != nil {
 		return err
 	}
@@ -46,16 +46,16 @@ func (g *pubRepo) StoreRsaObj(requestId string, expiration time.Duration, obj *b
 	return nil
 }
 
-func (g *pubRepo) UniqueIdExists(uniqueId string) bool {
-	r, err := g.redis.Exists(context.Background(), uniqueId).Result()
+func (g *pubRepo) UniqueIdExists(ctx context.Context, uniqueId string) bool {
+	r, err := g.redis.Exists(ctx, uniqueId).Result()
 	if err != nil {
 		return false
 	}
 	return r == 1
 }
 
-func (g *pubRepo) StoreUniqueId(uniqueId string, ttl time.Duration) error {
-	r, err := g.redis.Set(context.Background(), uniqueId, "", ttl).Result()
+func (g *pubRepo) StoreUniqueId(ctx context.Context, uniqueId string, ttl time.Duration) error {
+	r, err := g.redis.Set(ctx, uniqueId, "", ttl).Result()
 	if err != nil {
 		return err
 	}

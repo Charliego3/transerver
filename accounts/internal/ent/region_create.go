@@ -39,8 +39,8 @@ func (rc *RegionCreate) SetImg(s string) *RegionCreate {
 
 // SetName sets the "name" field.
 func (rc *RegionCreate) SetName(s struct {
-	En string
-	Zh string
+	En string "json:\"en\""
+	Zh string "json:\"zh\""
 }) *RegionCreate {
 	rc.mutation.SetName(s)
 	return rc

@@ -24,8 +24,8 @@ type Region struct {
 	Img string `json:"img,omitempty"`
 	// Name holds the value of the "name" field.
 	Name struct {
-		En string
-		Zh string
+		En string "json:\"en\""
+		Zh string "json:\"zh\""
 	} `json:"name,omitempty"`
 }
 

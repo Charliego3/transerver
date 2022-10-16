@@ -4,8 +4,11 @@ go 1.19
 
 require (
 	entgo.io/ent v0.11.3
+	github.com/Charliego93/go-i18n/v2 v2.1.0
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
+	github.com/golang/glog v1.0.0
 	github.com/gookit/goutil v0.5.12
+	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3
@@ -20,6 +23,7 @@ require (
 )
 
 require (
+	github.com/BurntSushi/toml v1.2.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
@@ -31,6 +35,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
+	github.com/nicksnyder/go-i18n/v2 v2.2.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/prometheus/client_golang v1.13.0 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
@@ -44,4 +49,9 @@ require (
 	golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1 // indirect
 	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
 	golang.org/x/text v0.3.8 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
+)
+
+replace (
+	github.com/Charliego93/go-i18n/v2 v2.1.0 => ../../i18n
 )

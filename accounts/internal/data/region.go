@@ -20,5 +20,9 @@ func NewRegionRepo(data *Data, logger *zap.Logger) biz.RegionRepo {
 }
 
 func (g *regionRepo) FindByCode(ctx context.Context, code string) (*ent.Region, error) {
-	return g.data.ent.Region.Query().Where(region.Code(code)).First(ctx)
+	return g.data.ent.Region.Query().Select(region.FieldCode, region.FieldArea).Where(region.Code(code)).First(ctx)
+}
+
+func (g *regionRepo) All(ctx context.Context, lang string) (ent.Regions, error) {
+	return g.data.ent.Region.Query().All(ctx)
 }

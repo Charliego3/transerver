@@ -24,7 +24,7 @@ var (
 		{Name: "code", Type: field.TypeString},
 		{Name: "area", Type: field.TypeString},
 		{Name: "img", Type: field.TypeString},
-		{Name: "name", Type: field.TypeJSON},
+		{Name: "name", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "json"}},
 	}
 	// RegionsTable holds the schema information for the "regions" table.
 	RegionsTable = &schema.Table{

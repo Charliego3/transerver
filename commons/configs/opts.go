@@ -16,7 +16,7 @@ func WithSource(source []byte) Option {
 	}
 }
 
-func WithReadCloser(r io.ReadCloser) Option {
+func WithReadCloser(r io.Reader) Option {
 	return func(c *Config) {
 		c.reader = r
 	}

@@ -1,11 +1,14 @@
 package gs
 
 import (
+	"context"
+	"github.com/Charliego93/go-i18n/v2"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	"github.com/transerver/utils"
 	"google.golang.org/grpc"
 )
 
@@ -41,6 +44,12 @@ func WithLoggerOpt(opts ...grpc_zap.Option) Option {
 	}
 }
 
+func WithI18nOpts(opts ...i18n.Option) Option {
+	return func(gs *Server) {
+		gs.i18nOpts = opts
+	}
+}
+
 func WithRecoveryHandlerFuncContext(fn grpc_recovery.RecoveryHandlerFuncContext) Option {
 	return func(gs *Server) {
 		gs.recoverOpt = []grpc_recovery.Option{grpc_recovery.WithRecoveryHandlerContext(fn)}
@@ -57,4 +66,12 @@ func WithUnaryServerInterceptor(interceptor grpc.UnaryServerInterceptor) Option 
 	return func(gs *Server) {
 		gs.unaryOpts = append(gs.unaryOpts, interceptor)
 	}
+}
+
+// Interceptor
+
+// UnaryI18nInterceptor add accept-language key with language.Tag to context
+func UnaryI18nInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
+	ctx = context.WithValue(ctx, "accept-language", utils.Language(ctx))
+	return handler(ctx, req)
 }

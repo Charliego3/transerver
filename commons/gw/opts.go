@@ -2,14 +2,14 @@ package gw
 
 import (
 	"context"
-	"google.golang.org/grpc/status"
+	"github.com/gorilla/mux"
+	"github.com/transerver/commons/errors"
 	"io"
 	"net/http"
 	"net/textproto"
 	"strings"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/transerver/utils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/grpclog"
 )
@@ -20,20 +20,32 @@ const fallback = `{"code": 13, "message": "failed to marshal error message"}`
 type Option func(*Server)
 
 func WithServeMuxOpts(opts ...runtime.ServeMuxOption) Option {
-	return func(hs *Server) {
-		hs.muxOpts = append(hs.muxOpts, opts...)
+	return func(gw *Server) {
+		gw.muxOpts = append(gw.muxOpts, opts...)
 	}
 }
 
-func WithHandlers(handlers ...Handler) Option {
-	return func(hs *Server) {
-		hs.handlers = handlers
+func WithHandlerFunc(fn HandlerFunc) Option {
+	return func(gw *Server) {
+		gw.handler = fn
 	}
 }
 
 func WithAuthFunc(fn func(*http.Request) error) Option {
-	return func(hs *Server) {
-		hs.authFunc = fn
+	return func(gw *Server) {
+		gw.authFunc = fn
+	}
+}
+
+func WithDialer(ds ...Dialer) Option {
+	return func(gw *Server) {
+		gw.dialers = ds
+	}
+}
+
+func WithMiddleware(opts ...mux.MiddlewareFunc) Option {
+	return func(gw *Server) {
+		gw.middleware = opts
 	}
 }
 
@@ -45,24 +57,18 @@ func DefaultErrorHandler(
 	r *http.Request,
 	err error,
 ) {
-	code := codes.Internal
-	if r, ok := err.(interface{ GRPCStatus() *status.Status }); ok {
-		code = r.GRPCStatus().Code()
-	} else if r, ok := err.(interface{ Code() codes.Code }); ok {
-		code = r.Code()
-	}
-
+	resp, code := err2resp(ctx, err)
 	w.Header().Del("Trailer")
 	w.Header().Del("Transfer-Encoding")
 
-	contentType := marshaller.ContentType(err)
+	contentType := marshaller.ContentType(resp)
 	w.Header().Set("Content-Type", contentType)
 
 	if code == codes.Unauthenticated {
-		w.Header().Set("WWW-Authenticate", err.Error())
+		w.Header().Set("WWW-Authenticate", resp.Error())
 	}
 
-	buf, mer := marshaller.Marshal(err)
+	buf, mer := marshaller.Marshal(resp)
 	if mer != nil {
 		grpclog.Infof("Failed to marshal error message %v: %v", err, mer)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -124,14 +130,16 @@ func DefaultRoutingErrorHandler(
 	r *http.Request,
 	httpStatus int,
 ) {
-	sterr := utils.NewErrResponse(codes.Internal, "Unexpected routing error")
+	var sterr error
 	switch httpStatus {
 	case http.StatusBadRequest:
-		sterr = utils.NewErrResponse(codes.InvalidArgument, http.StatusText(httpStatus))
+		sterr = errors.New(http.StatusText(httpStatus), errors.WithCode(codes.InvalidArgument))
 	case http.StatusMethodNotAllowed:
-		sterr = utils.NewErrResponse(codes.Unimplemented, http.StatusText(httpStatus))
+		sterr = errors.New(http.StatusText(httpStatus), errors.WithCode(codes.Unimplemented))
 	case http.StatusNotFound:
-		sterr = utils.NewErrResponse(codes.NotFound, http.StatusText(httpStatus))
+		sterr = errors.New(http.StatusText(httpStatus), errors.WithCode(codes.NotFound))
+	default:
+		sterr = errors.New("Unexpected routing error")
 	}
 	runtime.HTTPError(ctx, mux, marshaller, w, r, sterr)
 }

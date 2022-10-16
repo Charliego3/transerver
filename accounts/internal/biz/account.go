@@ -2,13 +2,13 @@ package biz
 
 import (
 	"context"
+	"github.com/Charliego93/go-i18n/v2"
 	"github.com/gookit/goutil/strutil"
 	"github.com/transerver/accounts/internal/ent"
+	"github.com/transerver/commons/errors"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
 	"go.uber.org/zap"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 )
 
@@ -40,16 +40,19 @@ func (h *AccountHelper) Err() error {
 	return h.err
 }
 
-func (g *AccountUsecase) Register(req *acctspb.RegisterRequest, obj *RsaObj) error {
+func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequest, obj *RsaObj) error {
 	if utils.Blanks(req.Phone, req.Email) {
-		return status.Error(codes.InvalidArgument, "手机和邮箱不能同时为空")
+		return errors.ErrorArgumentf(ctx, "手机和邮箱不能同时为空")
 	}
 
 	if strutil.IsNotBlank(req.Phone) {
 		req.Region = strings.ToUpper(req.Region)
 		region, err := g.regionRepo.FindByCode(context.Background(), req.Region)
 		if err != nil {
-			return utils.ErrorArgumentf("Not found region with: [%s]", req.Region)
+			return errors.ErrorArgumentf(ctx, &i18n.LocalizeConfig{
+				MessageID:    "RegionNotFound",
+				TemplateData: req.Region,
+			})
 		}
 
 		_ = region.Name.En
