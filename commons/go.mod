@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	entgo.io/ent v0.11.3
-	github.com/Charliego93/go-i18n/v2 v2.1.0
+	github.com/Charliego93/go-i18n/v2 v2.1.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/golang/glog v1.0.0
 	github.com/gookit/goutil v0.5.12
@@ -50,8 +50,4 @@ require (
 	golang.org/x/sys v0.0.0-20221010170243-090e33056c14 // indirect
 	golang.org/x/text v0.3.8 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-)
-
-replace (
-	github.com/Charliego93/go-i18n/v2 v2.1.0 => ../../i18n
 )

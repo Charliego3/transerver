@@ -46,6 +46,8 @@ github.com/Charliego93/go-i18n/v2 v2.0.1 h1:SAzANfkT5IBpMql4CpER2bN8KPynRsW70iEA
 github.com/Charliego93/go-i18n/v2 v2.0.1/go.mod h1:FMuQr7DnZoCy+cTWwPlWBv1gTxsjYPgTGrg7WWELTtw=
 github.com/Charliego93/go-i18n/v2 v2.1.0 h1:SCmDyI2FO54ytp6E1oS2zGPJkemexitktnerneL8vGc=
 github.com/Charliego93/go-i18n/v2 v2.1.0/go.mod h1:FMuQr7DnZoCy+cTWwPlWBv1gTxsjYPgTGrg7WWELTtw=
+github.com/Charliego93/go-i18n/v2 v2.1.1 h1:V6jWFYCYyMUreMGydy3DMiypOpA+hwWvAAZOzeu+ywg=
+github.com/Charliego93/go-i18n/v2 v2.1.1/go.mod h1:FMuQr7DnZoCy+cTWwPlWBv1gTxsjYPgTGrg7WWELTtw=
 github.com/DATA-DOG/go-sqlmock v1.5.0 h1:Shsta01QNfFxHCfpW6YH2STWB0MudeXXEWMr20OEh60=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
 github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=
