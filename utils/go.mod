@@ -3,7 +3,7 @@ module github.com/transerver/utils
 go 1.19
 
 require (
-	github.com/Charliego93/go-i18n/v2 v2.1.1
+	github.com/Charliego93/go-i18n/v2 v2.1.2
 	github.com/gookit/goutil v0.5.12
 	github.com/json-iterator/go v1.1.12
 	golang.org/x/text v0.3.8

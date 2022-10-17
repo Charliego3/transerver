@@ -10,6 +10,7 @@ import (
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	"github.com/transerver/utils"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 type Option func(gs *Server)
@@ -74,4 +75,10 @@ func WithUnaryServerInterceptor(interceptor grpc.UnaryServerInterceptor) Option 
 func UnaryI18nInterceptor(ctx context.Context, req interface{}, _ *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error) {
 	ctx = context.WithValue(ctx, "accept-language", utils.Language(ctx))
 	return handler(ctx, req)
+}
+
+// StreamI18nInterceptor add accept-language key with language.Tag to context
+func StreamI18nInterceptor(srv interface{}, ss grpc.ServerStream, _ *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+	_ = ss.SetHeader(metadata.Pairs("accept-language", utils.Language(ss.Context()).String()))
+	return handler(srv, ss)
 }

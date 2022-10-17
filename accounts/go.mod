@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	entgo.io/ent v0.11.3
-	github.com/Charliego93/go-i18n/v2 v2.1.1
+	github.com/Charliego93/go-i18n/v2 v2.1.2
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
 	github.com/google/wire v0.5.0
 	github.com/gookit/goutil v0.5.12

@@ -11,6 +11,7 @@ import (
 	gp "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/logger"
+	"github.com/transerver/utils"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -41,6 +42,7 @@ func NewGRPCServer(services []Service, opts ...Option) (*Server, func()) {
 		gt.StreamServerInterceptor(gs.tracingOpt...),
 		gz.StreamServerInterceptor(logger.Standard(), gs.loggerOpts...),
 		gr.StreamServerInterceptor(gs.recoverOpt...),
+		StreamI18nInterceptor,
 	)
 
 	gs.unaryOpts = append(gs.unaryOpts,
@@ -49,6 +51,7 @@ func NewGRPCServer(services []Service, opts ...Option) (*Server, func()) {
 		gt.UnaryServerInterceptor(gs.tracingOpt...),
 		gz.UnaryServerInterceptor(logger.Standard(), gs.loggerOpts...),
 		gr.UnaryServerInterceptor(gs.recoverOpt...),
+		UnaryI18nInterceptor,
 	)
 
 	if gs.authFunc != nil {
@@ -66,6 +69,13 @@ func NewGRPCServer(services []Service, opts ...Option) (*Server, func()) {
 		s.RegisterGRPC(gs.Server)
 	}
 
+	if len(gs.i18nOpts) == 0 {
+		gs.i18nOpts = []i18n.Option{
+			i18n.NewLoaderWithPath("internal/i18n"),
+		}
+	}
+
+	gs.i18nOpts = append([]i18n.Option{i18n.WithDefaultLanguage(utils.DefaultLanguage)}, gs.i18nOpts...)
 	i18n.Initialize(gs.i18nOpts...)
 	return gs, gs.GracefulStop
 }

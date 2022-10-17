@@ -1,5 +1,5 @@
 github.com/BurntSushi/toml v1.2.0 h1:Rt8g24XnyGTyglgET/PRUNlrUeu9F5L+7FilkXfZgs0=
-github.com/Charliego93/go-i18n/v2 v2.1.1 h1:V6jWFYCYyMUreMGydy3DMiypOpA+hwWvAAZOzeu+ywg=
+github.com/Charliego93/go-i18n/v2 v2.1.2 h1:z/xzNQ1zOdAIn0R+hZBKJ9+La3W/+Jt8N6vsx8OmGlQ=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
 github.com/gin-gonic/gin v1.7.7 h1:3DoBmSbJbZAWqXJC3SLjAPfutPJJRN1U5pALB7EeTTs=
