@@ -133,13 +133,13 @@ func DefaultRoutingErrorHandler(
 	var sterr error
 	switch httpStatus {
 	case http.StatusBadRequest:
-		sterr = errors.New(http.StatusText(httpStatus), errors.WithCode(codes.InvalidArgument))
+		sterr = errors.NewArgumentf(ctx, http.StatusText(httpStatus))
 	case http.StatusMethodNotAllowed:
-		sterr = errors.New(http.StatusText(httpStatus), errors.WithCode(codes.Unimplemented))
+		sterr = errors.New(ctx, codes.Unimplemented, http.StatusText(httpStatus))
 	case http.StatusNotFound:
-		sterr = errors.New(http.StatusText(httpStatus), errors.WithCode(codes.NotFound))
+		sterr = errors.New(ctx, codes.NotFound, http.StatusText(httpStatus))
 	default:
-		sterr = errors.New("Unexpected routing error")
+		sterr = errors.NewInternal(ctx, "Unexpected routing error")
 	}
 	runtime.HTTPError(ctx, mux, marshaller, w, r, sterr)
 }

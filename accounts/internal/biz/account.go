@@ -39,14 +39,14 @@ func (h *AccountHelper) Err() error {
 
 func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequest, obj *RsaObj) error {
 	if utils.Blanks(req.Phone, req.Email) {
-		return errors.ErrorArgumentf(ctx, "手机和邮箱不能同时为空")
+		return errors.NewArgumentf(ctx, "手机和邮箱不能同时为空")
 	}
 
 	if strutil.IsNotBlank(req.Phone) {
 		req.Region = strings.ToUpper(req.Region)
 		region, err := g.regionRepo.FindByCode(context.Background(), req.Region)
 		if err != nil {
-			return errors.ErrorArgumentf(ctx, &i18n.LocalizeConfig{
+			return errors.NewArgumentf(ctx, &i18n.Localized{
 				MessageID:    "RegionNotFound",
 				TemplateData: req.Region,
 			})

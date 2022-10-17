@@ -35,7 +35,7 @@ func NewRsaUsecase(repo PubRepo) *PubUsecase {
 
 func (g *PubUsecase) FetchObj(ctx context.Context, requestId string, opts ...Option) (*RsaObj, error) {
 	if len(requestId) == 0 {
-		return nil, errors.New("empty requestId for fetch rsa key")
+		return nil, errors.NewInternal(ctx, "empty requestId for fetch rsa key")
 	}
 
 	requestId = g.solveId(requestId)
@@ -79,8 +79,7 @@ func (g *PubUsecase) FetchUniqueId(ctx context.Context, ttl time.Duration) (stri
 
 func (g *PubUsecase) ValidateUniqueId(ctx context.Context, uniqueId string) error {
 	if strutil.IsBlank(uniqueId) || !g.repo.UniqueIdExists(ctx, uniqueId) {
-		return errors.New("Timed out, please refresh the page and try again!",
-			errors.WithCode(codes.ResourceExhausted))
+		return errors.New(ctx, codes.ResourceExhausted, "Timed out, please refresh the page and try again!")
 	}
 	return nil
 }
@@ -109,10 +108,10 @@ func (o *RsaObj) UnmarshalBinary(data []byte) error {
 }
 
 // Encrypt returns to encode data and if an error
-func (o *RsaObj) Encrypt(data []byte) ([]byte, error) {
+func (o *RsaObj) Encrypt(ctx context.Context, data []byte) ([]byte, error) {
 	block, _ := pem.Decode(o.Public)
 	if block == nil {
-		return nil, errors.New("public key error")
+		return nil, errors.NewInternal(ctx, "public key error")
 	}
 	pubKey, err := x509.ParsePKCS1PublicKey(block.Bytes)
 	if err != nil {
@@ -122,10 +121,10 @@ func (o *RsaObj) Encrypt(data []byte) ([]byte, error) {
 }
 
 // Decrypt returns to decode data and if an error
-func (o *RsaObj) Decrypt(ciphertext []byte) ([]byte, error) {
+func (o *RsaObj) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, error) {
 	block, _ := pem.Decode(o.Private)
 	if block == nil {
-		return nil, errors.New("private key error")
+		return nil, errors.NewInternal(ctx, "private key error")
 	}
 	private, err := x509.ParsePKCS1PrivateKey(block.Bytes)
 	if err != nil {

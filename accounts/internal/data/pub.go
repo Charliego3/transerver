@@ -39,7 +39,7 @@ func (g *pubRepo) StoreRsaObj(ctx context.Context, requestId string, expiration 
 		return err
 	}
 	if "OK" != status {
-		return errors.New("store rsa obj error")
+		return errors.NewInternal(ctx, "store rsa obj error")
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func (g *pubRepo) StoreUniqueId(ctx context.Context, uniqueId string, ttl time.D
 		return err
 	}
 	if r != "OK" {
-		return errors.New("store unique id error")
+		return errors.NewInternal(ctx, "store unique id error")
 	}
 	return nil
 }

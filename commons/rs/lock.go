@@ -116,6 +116,6 @@ func (l *Lock) Release() error {
 // func (l *Lock) LoggedRelease() {
 // 	err := l.Release()
 // 	if err != nil {
-// 		logger.Sugar().Errorf("redislock:release %s, key: %s", err.Error(), l.Key)
+// 		logger.Sugar().Errorf("redislock:release %s, key: %s", err.New(), l.Key)
 // 	}
 // }

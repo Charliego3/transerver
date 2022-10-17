@@ -18,7 +18,7 @@ func (e Err) Error() string {
 }
 
 func (e Err) Localize(ctx context.Context) string {
-	return i18n.MustTr(ctx, &i18n.LocalizeConfig{
+	return i18n.MustTr(ctx, &i18n.Localized{
 		MessageID:    e.Template,
 		TemplateData: e.Data,
 	})
@@ -44,17 +44,17 @@ func WithTemplate(template string) Option {
 	}
 }
 
-func New(template string, opts ...Option) error {
-	e := &Err{Template: template, Code: codes.Internal}
-	for _, opt := range opts {
-		opt(e)
-	}
-	return e
+func New[T i18n.Message](ctx context.Context, code codes.Code, messageId T) error {
+	return status.Error(code, i18n.MustTr(ctx, messageId))
 }
 
-func ErrorArgument(ctx context.Context, err error) error {
+func NewInternal[T i18n.Message](ctx context.Context, messageId T) error {
+	return New(ctx, codes.Internal, messageId)
+}
+
+func NewArgument(ctx context.Context, err error) error {
 	if e, ok := err.(interface{ Field() string }); ok {
-		return ErrorArgumentf(ctx, &i18n.LocalizeConfig{
+		return NewArgumentf(ctx, &i18n.Localized{
 			MessageID:    "InvalidArgument",
 			TemplateData: e.Field(),
 		})
@@ -62,6 +62,6 @@ func ErrorArgument(ctx context.Context, err error) error {
 	return err
 }
 
-func ErrorArgumentf[T i18n.MessageID](ctx context.Context, messageId T) error {
-	return status.Error(codes.InvalidArgument, i18n.MustTr(ctx, messageId))
+func NewArgumentf[T i18n.Message](ctx context.Context, messageId T) error {
+	return New(ctx, codes.InvalidArgument, messageId)
 }

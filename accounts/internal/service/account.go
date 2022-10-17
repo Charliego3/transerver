@@ -29,7 +29,7 @@ func (g *AccountService) RegisterGRPC(s *grpc.Server) {
 func (g *AccountService) Register(ctx context.Context, req *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
 	err := req.Validate()
 	if err != nil {
-		return nil, errors.ErrorArgument(ctx, err)
+		return nil, errors.NewArgument(ctx, err)
 	}
 
 	if err = g.pubcase.ValidateUniqueId(ctx, req.GetUnique()); err != nil {
