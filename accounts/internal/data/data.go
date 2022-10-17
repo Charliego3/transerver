@@ -5,10 +5,13 @@ import (
 	"github.com/google/wire"
 	_ "github.com/lib/pq"
 	"github.com/pkg/errors"
+	"github.com/transerver/accounts/internal/conf"
 	"github.com/transerver/accounts/internal/ent"
 	"github.com/transerver/commons/configs"
+	"github.com/transerver/commons/logger"
 	"github.com/transerver/commons/rs"
-	"go.uber.org/zap"
+	"github.com/xo/dburl"
+	"strings"
 )
 
 var ProviderSet = wire.NewSet(
@@ -19,17 +22,15 @@ var ProviderSet = wire.NewSet(
 )
 
 type Data struct {
-	logger    *zap.SugaredLogger
-	bootstrap configs.IConfig
-	ent       *ent.Client
-	redis     *rs.Client
-	err       error
+	ent   *ent.Client
+	redis *rs.Client
+	err   error
 }
 
-func NewData(bootstrap configs.IConfig, logger *zap.Logger) (data *Data, cleanup func(), err error) {
-	data = &Data{logger: logger.Sugar(), bootstrap: bootstrap}
+func NewData() (data *Data, cleanup func(), err error) {
+	data = &Data{}
 	data.connectDatabase()
-	data.connectRedis(logger)
+	data.connectRedis()
 
 	if data.err != nil {
 		return nil, nil, data.err
@@ -37,26 +38,30 @@ func NewData(bootstrap configs.IConfig, logger *zap.Logger) (data *Data, cleanup
 
 	return data, func() {
 		_ = data.ent.Close()
-		data.logger.Infof("closing database connection.")
+		logger.Sugar().Infof("closing database connection.")
 		_ = data.redis.Close()
-		data.logger.Infof("closing redis connection.")
+		logger.Sugar().Infof("closing redis connection.")
 	}, data.err
 }
 
-func (d *Data) connectRedis(logger *zap.Logger) {
+func (d *Data) connectRedis() {
 	if d.err != nil {
 		return
 	}
 
-	d.redis, d.err = rs.ConnectRedis(logger, d.bootstrap, rs.Config{})
+	d.redis, d.err = conf.Bootstrap.Redis.Connect(rs.Config{})
 	if d.err != nil {
 		d.err = errors.Wrap(d.err, "connect redis error")
+	} else {
+		logger.Sugar().Infof("[%s] connnect successful",
+			strings.Join(conf.Bootstrap.Redis.Address, ", "))
 	}
 }
 
 func (d *Data) connectDatabase() {
 	var drv *sql.Driver
-	drv, d.err = configs.ConnectDatabase(d.logger, d.bootstrap)
+	var url *dburl.URL
+	drv, url, d.err = conf.Bootstrap.Database.Connect()
 	if d.err != nil {
 		d.err = errors.Wrap(d.err, "connect database error")
 		return
@@ -65,12 +70,13 @@ func (d *Data) connectDatabase() {
 	opts := []ent.Option{
 		ent.Driver(drv),
 		ent.Log(func(a ...any) {
-			d.logger.Debug(a...)
+			logger.Sugar().Debug(a...)
 		}),
 	}
-	if d.bootstrap.Env() == configs.DEV {
+	if conf.Bootstrap.Environment == configs.DEV {
 		opts = append(opts, ent.Debug())
 	}
 	d.ent = ent.NewClient(opts...)
+	logger.Sugar().Infof("[%s] connect successfully!!!", url.URL.Redacted())
 	return
 }

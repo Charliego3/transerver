@@ -3,7 +3,6 @@ package biz
 import (
 	"context"
 	"github.com/transerver/accounts/internal/ent"
-	"go.uber.org/zap"
 )
 
 type RegionRepo interface {
@@ -12,22 +11,20 @@ type RegionRepo interface {
 }
 
 type RegionUsecase struct {
-	repo   RegionRepo
-	logger *zap.Logger
+	repo RegionRepo
 }
 
 type RegionHelper struct {
-	repo   RegionRepo
-	logger *zap.Logger
-	err    error
+	repo RegionRepo
+	err  error
 }
 
-func NewRegionUsecase(repo RegionRepo, logger *zap.Logger) *RegionUsecase {
-	return &RegionUsecase{repo: repo, logger: logger}
+func NewRegionUsecase(repo RegionRepo) *RegionUsecase {
+	return &RegionUsecase{repo: repo}
 }
 
 func (g *RegionUsecase) Helper() *RegionHelper {
-	return &RegionHelper{repo: g.repo, logger: g.logger}
+	return &RegionHelper{repo: g.repo}
 }
 
 func (h *RegionHelper) Err() error {

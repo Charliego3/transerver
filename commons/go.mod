@@ -6,7 +6,6 @@ require (
 	entgo.io/ent v0.11.3
 	github.com/Charliego93/go-i18n/v2 v2.1.1
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
-	github.com/golang/glog v1.0.0
 	github.com/gookit/goutil v0.5.12
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0

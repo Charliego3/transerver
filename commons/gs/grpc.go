@@ -2,7 +2,6 @@ package gs
 
 import (
 	"github.com/Charliego93/go-i18n/v2"
-	"github.com/golang/glog"
 	gm "github.com/grpc-ecosystem/go-grpc-middleware"
 	ga "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	gz "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
@@ -11,7 +10,7 @@ import (
 	gt "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	gp "github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/transerver/commons/configs"
-	"go.uber.org/zap"
+	"github.com/transerver/commons/logger"
 	"google.golang.org/grpc"
 	"net"
 )
@@ -19,7 +18,6 @@ import (
 type Server struct {
 	*grpc.Server
 
-	bootstrap  configs.IConfig
 	streamOpts []grpc.StreamServerInterceptor
 	unaryOpts  []grpc.UnaryServerInterceptor
 	serverOpts []grpc.ServerOption
@@ -31,8 +29,8 @@ type Server struct {
 	authFunc   ga.AuthFunc
 }
 
-func NewGRPCServer(logger *zap.Logger, bootstrap configs.IConfig, services []Service, opts ...Option) (*Server, func()) {
-	gs := &Server{bootstrap: bootstrap}
+func NewGRPCServer(services []Service, opts ...Option) (*Server, func()) {
+	gs := &Server{}
 	for _, opt := range opts {
 		opt(gs)
 	}
@@ -41,7 +39,7 @@ func NewGRPCServer(logger *zap.Logger, bootstrap configs.IConfig, services []Ser
 		gp.StreamServerInterceptor,
 		gc.StreamServerInterceptor(gs.ctxTagOpts...),
 		gt.StreamServerInterceptor(gs.tracingOpt...),
-		gz.StreamServerInterceptor(logger, gs.loggerOpts...),
+		gz.StreamServerInterceptor(logger.Standard(), gs.loggerOpts...),
 		gr.StreamServerInterceptor(gs.recoverOpt...),
 	)
 
@@ -49,7 +47,7 @@ func NewGRPCServer(logger *zap.Logger, bootstrap configs.IConfig, services []Ser
 		gp.UnaryServerInterceptor,
 		gc.UnaryServerInterceptor(gs.ctxTagOpts...),
 		gt.UnaryServerInterceptor(gs.tracingOpt...),
-		gz.UnaryServerInterceptor(logger, gs.loggerOpts...),
+		gz.UnaryServerInterceptor(logger.Standard(), gs.loggerOpts...),
 		gr.UnaryServerInterceptor(gs.recoverOpt...),
 	)
 
@@ -73,15 +71,18 @@ func NewGRPCServer(logger *zap.Logger, bootstrap configs.IConfig, services []Ser
 }
 
 func (s *Server) Run() error {
-	l, err := net.Listen("tcp", s.bootstrap.Addr())
+	l, err := net.Listen(configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		s.GracefulStop()
 		if err := l.Close(); err != nil {
-			glog.Errorf("Failed to close %s %s: %v", "tcp", s.bootstrap.Addr(), err)
+			logger.Sugar().Errorf("Failed to close %s %s: %v",
+				configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address, err)
 		}
 	}()
+	logger.Sugar().Infof(`Starting listening at "%s:%s"`,
+		configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address)
 	return s.Serve(l)
 }

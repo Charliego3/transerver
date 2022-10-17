@@ -1,4 +1,5 @@
 environment: dev
+network: "tcp"
 address: ":9091"
 database:
   dsn: "postgres://root:root@127.0.0.1:5432/accounts?sslmode=disable"
@@ -11,3 +12,8 @@ database:
 redis:
   address:
     - "127.0.0.1:6379"
+
+own:
+  - "own1"
+  - "own2"
+  - "own3"

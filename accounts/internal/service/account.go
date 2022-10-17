@@ -6,7 +6,6 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/commons/errors"
 	"github.com/transerver/protos/acctspb"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,11 +16,10 @@ type AccountService struct {
 
 	usecase *biz.AccountUsecase
 	pubcase *biz.PubUsecase
-	logger  *zap.Logger
 }
 
-func NewAccountService(usecase *biz.AccountUsecase, rsa *biz.PubUsecase, logger *zap.Logger) *AccountService {
-	return &AccountService{usecase: usecase, pubcase: rsa, logger: logger}
+func NewAccountService(usecase *biz.AccountUsecase, rsa *biz.PubUsecase) *AccountService {
+	return &AccountService{usecase: usecase, pubcase: rsa}
 }
 
 func (g *AccountService) RegisterGRPC(s *grpc.Server) {

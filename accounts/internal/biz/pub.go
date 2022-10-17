@@ -11,7 +11,6 @@ import (
 	json "github.com/json-iterator/go"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/transerver/commons/errors"
-	"go.uber.org/zap"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"strings"
@@ -26,13 +25,12 @@ type PubRepo interface {
 }
 
 type PubUsecase struct {
-	repo   PubRepo
-	logger *zap.Logger
+	repo PubRepo
 }
 
-func NewRsaUsecase(repo PubRepo, logger *zap.Logger) *PubUsecase {
+func NewRsaUsecase(repo PubRepo) *PubUsecase {
 	SetRsaKeyPrefix("rsa")
-	return &PubUsecase{repo: repo, logger: logger}
+	return &PubUsecase{repo: repo}
 }
 
 func (g *PubUsecase) FetchObj(ctx context.Context, requestId string, opts ...Option) (*RsaObj, error) {

@@ -6,7 +6,6 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/commons/errors"
 	"github.com/transerver/protos/acctspb"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
@@ -17,11 +16,10 @@ type PubService struct {
 	acctspb.UnimplementedRsaServiceServer
 
 	usecase *biz.PubUsecase
-	logger  *zap.Logger
 }
 
-func NewRsaService(usecase *biz.PubUsecase, logger *zap.Logger) *PubService {
-	return &PubService{usecase: usecase, logger: logger}
+func NewRsaService(usecase *biz.PubUsecase) *PubService {
+	return &PubService{usecase: usecase}
 }
 
 func (g *PubService) RegisterGRPC(s *grpc.Server) {

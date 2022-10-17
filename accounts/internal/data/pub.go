@@ -5,7 +5,6 @@ import (
 	"github.com/go-redis/redis/v9"
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/commons/errors"
-	"go.uber.org/zap"
 	"time"
 )
 
@@ -13,11 +12,10 @@ var _ biz.PubRepo = (*pubRepo)(nil)
 
 type pubRepo struct {
 	*Data
-	logger *zap.Logger
 }
 
-func NewRsaRepo(data *Data, logger *zap.Logger) biz.PubRepo {
-	return &pubRepo{Data: data, logger: logger}
+func NewRsaRepo(data *Data) biz.PubRepo {
+	return &pubRepo{Data: data}
 }
 
 func (g *pubRepo) FetchRsaObj(ctx context.Context, requestId string) (*biz.RsaObj, error) {

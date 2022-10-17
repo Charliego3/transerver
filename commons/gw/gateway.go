@@ -5,7 +5,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/commons/configs"
-	"go.uber.org/zap"
+	"github.com/transerver/commons/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
@@ -20,8 +20,6 @@ type Server struct {
 	gwmux http.Handler
 	ctx   context.Context
 
-	bootstrap  configs.IConfig
-	logger     *zap.SugaredLogger
 	muxOpts    []runtime.ServeMuxOption
 	handler    HandlerFunc
 	authFunc   func(*http.Request) error
@@ -39,8 +37,8 @@ func (gs *Server) Watch(_ context.Context, _ *grpc_health_v1.HealthCheckRequest,
 	return nil, status.Error(codes.Unimplemented, "unimplemented")
 }
 
-func NewGatewayServer(logger *zap.Logger, bootstrap configs.IConfig, opts ...Option) (*Server, error) {
-	gs := &Server{logger: logger.Sugar(), bootstrap: bootstrap, ctx: context.Background()}
+func NewGatewayServer(opts ...Option) (*Server, error) {
+	gs := &Server{ctx: context.Background()}
 	gs.muxOpts = []runtime.ServeMuxOption{
 		runtime.WithMarshalerOption("application/json", NewJSONMarshaller()),
 		runtime.WithMarshalerOption("application/json+pretty", NewJSONMarshaller(true)),
@@ -73,26 +71,28 @@ func (gs *Server) Run() error {
 
 	router.PathPrefix("/").Handler(gs.gwmux)
 
+	address := configs.Bootstrap.Root().Address
 	s := &http.Server{
-		Addr:    gs.bootstrap.Addr(),
+		Addr:    address,
 		Handler: router,
 	}
 
+	sugar := logger.Sugar()
 	defer func() {
 		for _, conn := range gs.conns {
 			if err := conn.Close(); err != nil {
-				gs.logger.Errorf("Failed to close a client connection to the gRPC[%s] server: %v", conn.Target(), err)
+				sugar.Errorf("Failed to close a client connection to the gRPC[%s] server: %v", conn.Target(), err)
 			}
 		}
 
 		if err := s.Shutdown(ctx); err != nil {
-			gs.logger.Errorf("Failed to shutdown http[%s] server: %v", gs.bootstrap.Addr(), err)
+			sugar.Errorf("Failed to shutdown http[%s] server: %v", address, err)
 		}
 	}()
 
-	gs.logger.Infof("Starting listening at %s", gs.bootstrap.Addr())
+	sugar.Infof("Starting listening at %s", address)
 	if err := s.ListenAndServe(); err != http.ErrServerClosed {
-		gs.logger.Errorf("Failed to listen and serve: %v", err)
+		sugar.Errorf("Failed to listen and serve: %v", err)
 		return err
 	}
 	return nil

@@ -1,10 +1,9 @@
 package main
 
 import (
-	"github.com/google/wire"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/gw"
+	"github.com/transerver/commons/logger"
 	"github.com/transerver/protos/acctspb"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/balancer/grpclb"
@@ -13,14 +12,6 @@ import (
 	_ "google.golang.org/grpc/balancer/weightedroundrobin"
 	_ "google.golang.org/grpc/balancer/weightedtarget"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
-)
-
-var providerSet = wire.NewSet(
-	NewLoggerWriter,
-	NewBootstrap,
-	NewCfgOpts,
-	NewGWOpts,
 )
 
 var accountDialer = []gw.DialerFunc{
@@ -30,19 +21,7 @@ var accountDialer = []gw.DialerFunc{
 }
 
 func main() {
-	app, cleanup, err := wireApp()
-	if err != nil {
-		panic(err)
-	}
-
-	defer cleanup()
-	if err := app.Run(); err != nil {
-		panic(err)
-	}
-}
-
-func NewGWOpts() []gw.Option {
-	return []gw.Option{
+	app, err := gw.NewGatewayServer(
 		gw.WithServeMuxOpts(runtime.WithIncomingHeaderMatcher(func(key string) (string, bool) {
 			switch key {
 			case "Accept-Language":
@@ -58,20 +37,12 @@ func NewGWOpts() []gw.Option {
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
 				grpc.WithResolvers(gw.NewResolver(":9091", ":9092")),
 			),
-		),
+		))
+	if err != nil {
+		logger.Sugar().Fatal("create gateway fail", err)
 	}
-}
 
-func NewLoggerWriter() io.Writer {
-	return io.Discard
-}
-
-func NewBootstrap() any {
-	return &configs.Bootstrap{}
-}
-
-func NewCfgOpts() []configs.Option {
-	return []configs.Option{
-		configs.WithPath("config.yaml"),
+	if err := app.Run(); err != nil {
+		logger.Sugar().Fatal("gateway running error", err)
 	}
 }

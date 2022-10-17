@@ -2,39 +2,48 @@ package logger
 
 import (
 	"github.com/transerver/commons/configs"
-	"io"
 	"os"
+	"sync"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-// NewLoggerWithoutWriter returns logger with io.Discard
-func NewLoggerWithoutWriter(boot configs.IConfig) (*zap.Logger, func()) {
-	return NewLogger(boot, io.Discard)
+var (
+	standard *zap.Logger
+	sugar    *zap.SugaredLogger
+
+	standardOnce sync.Once
+	sugarOnce    sync.Once
+)
+
+func Standard() *zap.Logger {
+	standardOnce.Do(func() {
+		var core zapcore.Core
+		cfg := zap.NewProductionEncoderConfig()
+		cfg.FunctionKey = "F"
+		cfg.EncodeTime = zapcore.RFC3339TimeEncoder
+		cfg.EncodeDuration = zapcore.StringDurationEncoder
+		if configs.Bootstrap.Root().Environment == configs.DEV {
+			cfg.EncodeCaller = zapcore.FullCallerEncoder
+			cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
+			cfg.EncodeName = zapcore.FullNameEncoder
+			cfg.ConsoleSeparator = " "
+			encoder := zapcore.NewConsoleEncoder(cfg)
+			core = zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)
+		} else {
+			encoder := zapcore.NewJSONEncoder(cfg)
+			core = zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.InfoLevel)
+		}
+
+		standard = zap.New(core)
+	})
+	return standard
 }
 
-// NewLogger returns logger...
-func NewLogger(boot configs.IConfig, w io.Writer) (*zap.Logger, func()) {
-	var core zapcore.Core
-	cfg := zap.NewProductionEncoderConfig()
-	cfg.FunctionKey = "F"
-	cfg.EncodeTime = zapcore.RFC3339TimeEncoder
-	cfg.EncodeDuration = zapcore.StringDurationEncoder
-	if boot.Env() == configs.DEV {
-		cfg.EncodeCaller = zapcore.FullCallerEncoder
-		cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
-		cfg.EncodeName = zapcore.FullNameEncoder
-		cfg.ConsoleSeparator = " "
-		encoder := zapcore.NewConsoleEncoder(cfg)
-		core = zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)
-	} else {
-		encoder := zapcore.NewJSONEncoder(cfg)
-		core = zapcore.NewCore(encoder, zapcore.AddSync(w), zapcore.InfoLevel)
-	}
-
-	logger := zap.New(core)
-	return logger, func() {
-		_ = logger.Sync()
-	}
+func Sugar() *zap.SugaredLogger {
+	sugarOnce.Do(func() {
+		sugar = Standard().Sugar()
+	})
+	return sugar
 }

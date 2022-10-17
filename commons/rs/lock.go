@@ -66,11 +66,7 @@ func (c *Client) Obtain(ttl time.Duration, format string, v ...interface{}) (*Lo
 	if len(v) > 0 {
 		format = fmt.Sprintf(format, v...)
 	}
-	lock, err := c.obtain(format, ttl)
-	if err != nil {
-		c.logger.Errorf("redislock:obtain %+v", err)
-	}
-	return lock, err
+	return c.obtain(format, ttl)
 }
 
 // TTL returns the remaining time-to-live. Returns 0 if the lock has expired.
@@ -117,9 +113,9 @@ func (l *Lock) Release() error {
 	return nil
 }
 
-func (l *Lock) LoggedRelease() {
-	err := l.Release()
-	if err != nil {
-		l.c.logger.Errorf("redislock:release %s, key: %s", err.Error(), l.Key)
-	}
-}
+// func (l *Lock) LoggedRelease() {
+// 	err := l.Release()
+// 	if err != nil {
+// 		logger.Sugar().Errorf("redislock:release %s, key: %s", err.Error(), l.Key)
+// 	}
+// }

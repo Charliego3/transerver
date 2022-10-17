@@ -5,18 +5,16 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/accounts/internal/ent"
 	"github.com/transerver/accounts/internal/ent/region"
-	"go.uber.org/zap"
 )
 
 var _ biz.RegionRepo = (*regionRepo)(nil)
 
 type regionRepo struct {
-	data   *Data
-	logger *zap.Logger
+	data *Data
 }
 
-func NewRegionRepo(data *Data, logger *zap.Logger) biz.RegionRepo {
-	return &regionRepo{data: data, logger: logger}
+func NewRegionRepo(data *Data) biz.RegionRepo {
+	return &regionRepo{data: data}
 }
 
 func (g *regionRepo) FindByCode(ctx context.Context, code string) (*ent.Region, error) {

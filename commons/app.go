@@ -12,12 +12,12 @@ import (
 type App struct {
 	hs *gw.Server
 	gs *gs.Server
-	bs configs.IConfig
+	bs configs.IBootstrap
 	lg *zap.Logger
 }
 
 func NewApp(
-	bs configs.IConfig,
+	bs configs.IBootstrap,
 	lg *zap.Logger,
 	hs *gw.Server,
 	gs *gs.Server,

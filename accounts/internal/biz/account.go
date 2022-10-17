@@ -8,7 +8,6 @@ import (
 	"github.com/transerver/commons/errors"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
-	"go.uber.org/zap"
 	"strings"
 )
 
@@ -19,21 +18,19 @@ type AccountRepo interface {
 type AccountUsecase struct {
 	repo       AccountRepo
 	regionRepo RegionRepo
-	logger     *zap.Logger
 }
 
 type AccountHelper struct {
-	repo   AccountRepo
-	logger *zap.Logger
-	err    error
+	repo AccountRepo
+	err  error
 }
 
-func NewAccountUsecase(repo AccountRepo, regionRepo RegionRepo, logger *zap.Logger) *AccountUsecase {
-	return &AccountUsecase{repo: repo, regionRepo: regionRepo, logger: logger}
+func NewAccountUsecase(repo AccountRepo, regionRepo RegionRepo) *AccountUsecase {
+	return &AccountUsecase{repo: repo, regionRepo: regionRepo}
 }
 
 func (g *AccountUsecase) Helper() *AccountHelper {
-	return &AccountHelper{repo: g.repo, logger: g.logger}
+	return &AccountHelper{repo: g.repo}
 }
 
 func (h *AccountHelper) Err() error {

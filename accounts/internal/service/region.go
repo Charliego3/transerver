@@ -5,7 +5,6 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
-	"go.uber.org/zap"
 	"golang.org/x/text/language"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -15,11 +14,10 @@ type RegionService struct {
 	acctspb.UnimplementedRegionServiceServer
 
 	usecase *biz.RegionUsecase
-	logger  *zap.Logger
 }
 
-func NewRegionService(usecase *biz.RegionUsecase, logger *zap.Logger) *RegionService {
-	return &RegionService{usecase: usecase, logger: logger}
+func NewRegionService(usecase *biz.RegionUsecase) *RegionService {
+	return &RegionService{usecase: usecase}
 }
 
 func (g *RegionService) RegisterGRPC(s *grpc.Server) {

@@ -8,44 +8,31 @@ package main
 
 import (
 	"github.com/transerver/accounts/internal/biz"
-	"github.com/transerver/accounts/internal/conf"
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
-	"github.com/transerver/commons/configs"
 	"github.com/transerver/commons/gs"
-	"github.com/transerver/commons/logger"
 )
 
 // Injectors from wire.go:
 
 func wireApp() (*gs.Server, func(), error) {
-	v := conf.NewBootstrap()
-	v2 := NewCfgOpts()
-	iConfig, err := configs.Parse(v, v2...)
+	dataData, cleanup, err := data.NewData()
 	if err != nil {
 		return nil, nil, err
 	}
-	writer := NewLoggerWriter()
-	zapLogger, cleanup := logger.NewLogger(iConfig, writer)
-	dataData, cleanup2, err := data.NewData(iConfig, zapLogger)
-	if err != nil {
-		cleanup()
-		return nil, nil, err
-	}
-	accountRepo := data.NewAccountRepo(dataData, zapLogger)
-	regionRepo := data.NewRegionRepo(dataData, zapLogger)
-	accountUsecase := biz.NewAccountUsecase(accountRepo, regionRepo, zapLogger)
-	pubRepo := data.NewRsaRepo(dataData, zapLogger)
-	pubUsecase := biz.NewRsaUsecase(pubRepo, zapLogger)
-	accountService := service.NewAccountService(accountUsecase, pubUsecase, zapLogger)
-	pubService := service.NewRsaService(pubUsecase, zapLogger)
-	regionUsecase := biz.NewRegionUsecase(regionRepo, zapLogger)
-	regionService := service.NewRegionService(regionUsecase, zapLogger)
-	v3 := service.MakeServices(accountService, pubService, regionService)
-	v4 := NewGRPCOpts()
-	server, cleanup3 := gs.NewGRPCServer(zapLogger, iConfig, v3, v4...)
+	accountRepo := data.NewAccountRepo(dataData)
+	regionRepo := data.NewRegionRepo(dataData)
+	accountUsecase := biz.NewAccountUsecase(accountRepo, regionRepo)
+	pubRepo := data.NewRsaRepo(dataData)
+	pubUsecase := biz.NewRsaUsecase(pubRepo)
+	accountService := service.NewAccountService(accountUsecase, pubUsecase)
+	pubService := service.NewRsaService(pubUsecase)
+	regionUsecase := biz.NewRegionUsecase(regionRepo)
+	regionService := service.NewRegionService(regionUsecase)
+	v := service.MakeServices(accountService, pubService, regionService)
+	v2 := NewGRPCOpts()
+	server, cleanup2 := gs.NewGRPCServer(v, v2...)
 	return server, func() {
-		cleanup3()
 		cleanup2()
 		cleanup()
 	}, nil
