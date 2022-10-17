@@ -50,7 +50,7 @@ type Redis struct {
 }
 
 func (r *Redis) Connect(opt rs.Config) (*rs.Client, error) {
-	return rs.NewClient(
+	return rs.New(
 		rs.WithAddrs(r.Address...),
 		rs.WithDB(r.DB),
 		rs.WithUsername(r.Username),

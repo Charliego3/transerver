@@ -13,7 +13,19 @@ redis:
   address:
     - "127.0.0.1:6379"
 
-own:
-  - "own1"
-  - "own2"
-  - "own3"
+etcd:
+  endpoints:
+    - ":2379"
+  autoSyncInterval: 1h
+  dialTimeout: "20s"
+  dialKeepAliveTime: 2m
+  dialKeepAliveTimeout: 1m
+#  maxCallSendSize: 100
+#  maxCallRecvSize: 200
+#  username: root
+#  password: root
+#  permWithoutStream: false
+#  rejectOldCluster: false
+#  rootCA: ""
+#  pemKey: ""
+#  pemCert: ""

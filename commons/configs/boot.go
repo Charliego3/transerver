@@ -23,6 +23,7 @@ type Base struct {
 	Address     string      `json:"address,omitempty" yaml:"address,omitempty"`
 	Database    Database    `json:"database,omitempty" yaml:"database,omitempty"`
 	Redis       Redis       `json:"redis,omitempty" yaml:"redis,omitempty"`
+	Etcd        ETCD        `json:"etcd,omitempty" yaml:"etcd,omitempty"`
 }
 
 func (b *Base) Root() *Base {

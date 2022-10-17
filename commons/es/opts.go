@@ -47,6 +47,18 @@ func WithMaxCallSendSize(maxSize int) Option {
 	}
 }
 
+func WithMaxCallRecvSize(maxSize int) Option {
+	return func(c *ev3.Config) {
+		c.MaxCallRecvMsgSize = maxSize
+	}
+}
+
+func WithRejectOldCluster(reject bool) Option {
+	return func(c *ev3.Config) {
+		c.RejectOldCluster = reject
+	}
+}
+
 func WithTLS(tls *tls.Config) Option {
 	return func(c *ev3.Config) {
 		c.TLS = tls
@@ -71,7 +83,7 @@ func WithDialOptions(opts []grpc.DialOption) Option {
 	}
 }
 
-func WithContent(ctx context.Context) Option {
+func WithContext(ctx context.Context) Option {
 	return func(c *ev3.Config) {
 		c.Context = ctx
 	}

@@ -23,18 +23,30 @@ func Bytes(data string) []byte {
 	}))
 }
 
-func NonBlanks(v ...string) bool {
-	for _, i := range v {
-		if strutil.IsBlank(i) {
+// AnyBlank 存在任何一个字符串为空时返回true, 否则返回false
+func AnyBlank(args ...string) bool {
+	for _, v := range args {
+		if strutil.IsBlank(v) {
+			return true
+		}
+	}
+	return false
+}
+
+// NonBlanks 有任何一个字符串为空时返回false, 否则返回true
+func NonBlanks(args ...string) bool {
+	for _, v := range args {
+		if strutil.IsBlank(v) {
 			return false
 		}
 	}
 	return true
 }
 
-func Blanks(v ...string) bool {
-	for _, i := range v {
-		if strutil.IsNotBlank(i) {
+// Blanks 每一个值都为空时返回true, 存在任何一个不为空的字符串都返回false
+func Blanks(args ...string) bool {
+	for _, v := range args {
+		if strutil.IsNotBlank(v) {
 			return false
 		}
 	}

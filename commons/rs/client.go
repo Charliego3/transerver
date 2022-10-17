@@ -19,10 +19,10 @@ type Client struct {
 	rv9.UniversalClient
 }
 
-// NewClient returns redis UniversalClient wrapper
+// New returns redis UniversalClient wrapper
 // if the options is empty using default address with 127.0.0.1:6379
 // if not specified DialTimeout default is a minute
-func NewClient(opts ...Option) (*Client, error) {
+func New(opts ...Option) (*Client, error) {
 	cfg := &rv9.UniversalOptions{}
 	for _, opt := range opts {
 		opt(cfg)
