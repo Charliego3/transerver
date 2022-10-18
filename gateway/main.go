@@ -4,6 +4,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/commons/gw"
 	"github.com/transerver/commons/logger"
+	"github.com/transerver/commons/resolver"
 	"github.com/transerver/protos/acctspb"
 	"google.golang.org/grpc"
 	_ "google.golang.org/grpc/balancer/grpclb"
@@ -35,7 +36,7 @@ func main() {
 				"discovery:///accounts",
 				accountDialer,
 				grpc.WithTransportCredentials(insecure.NewCredentials()),
-				grpc.WithResolvers(gw.NewResolver(":9091", ":9092")),
+				grpc.WithResolvers(resolver.NewBuilder()),
 			),
 		))
 	if err != nil {

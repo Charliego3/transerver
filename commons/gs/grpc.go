@@ -1,6 +1,7 @@
 package gs
 
 import (
+	"context"
 	"github.com/Charliego93/go-i18n/v2"
 	gm "github.com/grpc-ecosystem/go-grpc-middleware"
 	ga "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -9,15 +10,20 @@ import (
 	gc "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	gt "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	gp "github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/transerver/commons/app"
 	"github.com/transerver/commons/configs"
+	"github.com/transerver/commons/es"
 	"github.com/transerver/commons/logger"
 	"github.com/transerver/utils"
+	"go.etcd.io/etcd/client/v3/naming/endpoints"
 	"google.golang.org/grpc"
 	"net"
+	"time"
 )
 
 type Server struct {
 	*grpc.Server
+	em endpoints.Manager
 
 	streamOpts []grpc.StreamServerInterceptor
 	unaryOpts  []grpc.UnaryServerInterceptor
@@ -31,7 +37,12 @@ type Server struct {
 }
 
 func NewGRPCServer(services []Service, opts ...Option) (*Server, func()) {
-	gs := &Server{}
+	manager, err := endpoints.NewManager(es.C().Client, "/"+app.Name)
+	if err != nil {
+		logger.Sugar().Fatal("endpoint manager initialize error", err)
+	}
+
+	gs := &Server{em: manager}
 	for _, opt := range opts {
 		opt(gs)
 	}
@@ -91,8 +102,23 @@ func (s *Server) Run() error {
 			logger.Sugar().Errorf("Failed to close %s %s: %v",
 				configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address, err)
 		}
+		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*3)
+		err := s.em.DeleteEndpoint(ctx, "/accounts/127.0.0.1:9092")
+		if err != nil {
+			logger.Sugar().Errorf("Delete grpc endpoint error", err)
+		}
+		cancelFunc()
 	}()
 	logger.Sugar().Infof(`Starting listening at "%s:%s"`,
 		configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+	err = s.em.AddEndpoint(ctx, "/accounts/127.0.0.1:9092", endpoints.Endpoint{
+		Addr: "127.0.0.1:9092",
+	})
+	if err != nil {
+		logger.Sugar().Errorf("Add endpoint error: %v", err)
+		return err
+	}
 	return s.Serve(l)
 }

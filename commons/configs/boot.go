@@ -19,6 +19,7 @@ type IBootstrap interface {
 
 type Base struct {
 	Environment Environment `json:"environment,omitempty" yaml:"environment,omitempty"`
+	Name        string      `json:"name,omitempty" yaml:"name,omitempty"`
 	Network     string      `json:"network,omitempty" yaml:"network,omitempty"`
 	Address     string      `json:"address,omitempty" yaml:"address,omitempty"`
 	Database    Database    `json:"database,omitempty" yaml:"database,omitempty"`

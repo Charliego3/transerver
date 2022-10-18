@@ -1,4 +1,5 @@
-environment: dev
+environment: dev # dev is debug mode, expect dev, prod
+name: "accounts" # Using dev environment, prod need to be injected at build
 network: "tcp"
 address: ":9091"
 database:
@@ -16,10 +17,10 @@ redis:
 etcd:
   endpoints:
     - ":2379"
-  autoSyncInterval: 1h
+#  autoSyncInterval: 1h
   dialTimeout: "20s"
-  dialKeepAliveTime: 2m
-  dialKeepAliveTimeout: 1m
+#  dialKeepAliveTime: 2m
+#  dialKeepAliveTimeout: 1m
 #  maxCallSendSize: 100
 #  maxCallRecvSize: 200
 #  username: root
