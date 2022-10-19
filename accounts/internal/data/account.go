@@ -19,3 +19,11 @@ func NewAccountRepo(data *Data) biz.AccountRepo {
 func (g *accountRepo) FindById(ctx context.Context, uid int64) (*ent.Account, error) {
 	return nil, nil
 }
+
+func (g *accountRepo) CheckPhoneExists(string) bool {
+	return false
+}
+
+func (g *accountRepo) CheckEmailExists(string) bool {
+	return false
+}

@@ -25,7 +25,7 @@ service AccountService {
 message RegisterRequest {
   string unique = 1 [(validate.rules).string.pattern = "[A-Za-z0-9_-]+"];
   string region = 2 [(validate.rules).string = {pattern: "[A-Z]{2,}"}];
-  string uname = 3 [(validate.rules).string = {ignore_empty: true, min_bytes: 5, max_bytes: 20}];
+  string uname = 3 [(validate.rules).string = {ignore_empty: true, min_len: 8, max_len: 32}];
   string phone = 4 [(validate.rules).string = {ignore_empty: true, pattern: "[0-9]+"}];
   string email = 5 [(validate.rules).string = {ignore_empty: true, email: true}];
   string code = 6 [(validate.rules).string.len = 6];

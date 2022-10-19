@@ -62,6 +62,14 @@ func NewArgument(ctx context.Context, err error) error {
 	return err
 }
 
-func NewArgumentf[T i18n.Message](ctx context.Context, messageId T) error {
+func NewArgumentf[T i18n.Message](ctx context.Context, messageId T, data ...any) error {
+	if len(data) > 0 {
+		if id, ok := ((any)(messageId)).(string); ok {
+			return New(ctx, codes.InvalidArgument, &i18n.Localized{
+				MessageID:    id,
+				TemplateData: data[0],
+			})
+		}
+	}
 	return New(ctx, codes.InvalidArgument, messageId)
 }

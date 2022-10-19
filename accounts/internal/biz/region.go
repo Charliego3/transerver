@@ -6,7 +6,7 @@ import (
 )
 
 type RegionRepo interface {
-	FindByCode(ctx context.Context, code string) (*ent.Region, error)
+	FindByCode(ctx context.Context, code string, fields ...string) (*ent.Region, error)
 	All(ctx context.Context, lang string) (ent.Regions, error)
 }
 

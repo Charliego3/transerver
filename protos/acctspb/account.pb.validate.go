@@ -81,10 +81,10 @@ func (m *RegisterRequest) validate(all bool) error {
 
 	if m.GetUname() != "" {
 
-		if l := len(m.GetUname()); l < 5 || l > 20 {
+		if l := utf8.RuneCountInString(m.GetUname()); l < 5 || l > 20 {
 			err := RegisterRequestValidationError{
 				field:  "Uname",
-				reason: "value length must be between 5 and 20 bytes, inclusive",
+				reason: "value length must be between 5 and 20 runes, inclusive",
 			}
 			if !all {
 				return err
