@@ -1,5 +1,7 @@
 package configs
 
+import "github.com/gookit/goutil/strutil"
+
 type Environment string
 
 var Bootstrap IBootstrap
@@ -29,4 +31,11 @@ type Base struct {
 
 func (b *Base) Root() *Base {
 	return b
+}
+
+func (b *Base) Env() Environment {
+	if strutil.IsBlank(string(b.Environment)) {
+		return PROD
+	}
+	return b.Environment
 }

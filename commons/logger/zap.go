@@ -24,7 +24,7 @@ func Standard() *zap.Logger {
 		cfg.FunctionKey = "F"
 		cfg.EncodeTime = zapcore.RFC3339TimeEncoder
 		cfg.EncodeDuration = zapcore.StringDurationEncoder
-		if configs.Bootstrap.Root().Environment == configs.DEV {
+		if configs.Bootstrap.Root().Env() == configs.DEV {
 			cfg.EncodeCaller = zapcore.FullCallerEncoder
 			cfg.EncodeLevel = zapcore.CapitalColorLevelEncoder
 			cfg.EncodeName = zapcore.FullNameEncoder

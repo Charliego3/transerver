@@ -2,6 +2,7 @@ package gs
 
 import (
 	"context"
+	"fmt"
 	"github.com/Charliego93/go-i18n/v2"
 	gm "github.com/grpc-ecosystem/go-grpc-middleware"
 	ga "github.com/grpc-ecosystem/go-grpc-middleware/auth"
@@ -18,6 +19,9 @@ import (
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 	"google.golang.org/grpc"
 	"net"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -82,7 +86,7 @@ func NewGRPCServer(services []Service, opts ...Option) (*Server, func()) {
 
 	if len(gs.i18nOpts) == 0 {
 		gs.i18nOpts = []i18n.Option{
-			i18n.NewLoaderWithPath("internal/i18n"),
+			i18n.NewLoaderWithPath("i18n"),
 		}
 	}
 
@@ -96,14 +100,17 @@ func (s *Server) Run() error {
 	if err != nil {
 		return err
 	}
+
+	target := fmt.Sprintf("/%s/%s", app.Name, configs.Bootstrap.Root().Address)
+
 	defer func() {
-		s.GracefulStop()
 		if err := l.Close(); err != nil {
 			logger.Sugar().Errorf("Failed to close %s %s: %v",
 				configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address, err)
 		}
+		s.GracefulStop()
 		ctx, cancelFunc := context.WithTimeout(context.Background(), time.Second*3)
-		err := s.em.DeleteEndpoint(ctx, "/accounts/127.0.0.1:9092")
+		err := s.em.DeleteEndpoint(ctx, target)
 		if err != nil {
 			logger.Sugar().Errorf("Delete grpc endpoint error", err)
 		}
@@ -113,12 +120,24 @@ func (s *Server) Run() error {
 		configs.Bootstrap.Root().Network, configs.Bootstrap.Root().Address)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
-	err = s.em.AddEndpoint(ctx, "/accounts/127.0.0.1:9092", endpoints.Endpoint{
-		Addr: "127.0.0.1:9092",
+	err = s.em.AddEndpoint(ctx, target, endpoints.Endpoint{
+		Addr: configs.Bootstrap.Root().Address,
 	})
 	if err != nil {
 		logger.Sugar().Errorf("Add endpoint error: %v", err)
 		return err
 	}
-	return s.Serve(l)
+
+	go func() {
+		err := s.Serve(l)
+		if err != nil {
+			logger.Sugar().Fatalf("Server serve error: %v", err)
+		}
+	}()
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGABRT, syscall.SIGIOT, syscall.SIGTERM)
+	<-ch
+
+	return nil
 }

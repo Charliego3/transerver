@@ -21,7 +21,3 @@ func wireApp() (*gs.Server, func(), error) {
 	)
 	return nil, nil, nil
 }
-
-func NewGRPCOpts() []gs.Option {
-	return nil
-}

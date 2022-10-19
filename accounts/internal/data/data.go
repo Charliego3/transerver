@@ -73,7 +73,7 @@ func (d *Data) connectDatabase() {
 			logger.Sugar().Debug(a...)
 		}),
 	}
-	if conf.Bootstrap.Environment == configs.DEV {
+	if conf.Bootstrap.Env() == configs.DEV {
 		opts = append(opts, ent.Debug())
 	}
 	d.ent = ent.NewClient(opts...)

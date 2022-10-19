@@ -1,6 +1,9 @@
 package main
 
 import (
+	"github.com/Charliego93/go-i18n/v2"
+	"github.com/transerver/accounts/internal/conf"
+	"github.com/transerver/commons/gs"
 	"github.com/transerver/commons/logger"
 )
 
@@ -13,5 +16,11 @@ func main() {
 	defer cleanup()
 	if err := app.Run(); err != nil {
 		logger.Sugar().Fatalf("accounts running error: %v", err)
+	}
+}
+
+func NewGRPCOpts() []gs.Option {
+	return []gs.Option{
+		gs.WithI18nOpts(i18n.NewLoaderWithPath(conf.I18nPath)),
 	}
 }

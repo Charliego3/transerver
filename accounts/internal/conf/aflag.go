@@ -1,14 +1,19 @@
 package conf
 
-import (
-	"flag"
+import "flag"
+
+const (
+	FlagConfig = "config"
+	FlagI18n   = "i18n"
 )
 
 var (
-	path *string
+	ConfigPath string
+	I18nPath   string
 )
 
 func init() {
-	path = flag.String("config", "internal/conf/config.yaml", "config path")
+	flag.StringVar(&ConfigPath, FlagConfig, "config.yaml", "config file path")
+	flag.StringVar(&I18nPath, FlagI18n, "i18n", "i18n folder/file path")
 	flag.Parse()
 }

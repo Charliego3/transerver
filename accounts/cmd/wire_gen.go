@@ -37,9 +37,3 @@ func wireApp() (*gs.Server, func(), error) {
 		cleanup()
 	}, nil
 }
-
-// wire.go:
-
-func NewGRPCOpts() []gs.Option {
-	return nil
-}

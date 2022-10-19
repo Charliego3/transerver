@@ -18,5 +18,5 @@ type bootstrap struct {
 
 func init() {
 	configs.RegisterBootstrap(Bootstrap)
-	configs.Parse(configs.NewFileLoader(*path))
+	configs.Parse(configs.NewFileLoader(ConfigPath))
 }
