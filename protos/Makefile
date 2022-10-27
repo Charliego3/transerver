@@ -35,6 +35,8 @@ gen:
 		--grpc-gateway_opt generate_unbound_methods=true \
 		--openapiv2_out ./swagger \
 		--openapiv2_opt logtostderr=true \
+		--openapiv2_opt allow_merge=true \
+        --openapiv2_opt merge_file_name=$* \
   		--validate_out="lang=go:." \
 		--validate_opt module=github.com/transerver/protos \
 		$(PROTOS)

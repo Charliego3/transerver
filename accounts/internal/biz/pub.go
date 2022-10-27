@@ -33,7 +33,7 @@ func NewRsaUsecase(repo PubRepo) *PubUsecase {
 	return &PubUsecase{repo: repo}
 }
 
-func (g *PubUsecase) FetchObj(ctx context.Context, requestId string, opts ...Option) (*RsaObj, error) {
+func (g *PubUsecase) FetchRsaObj(ctx context.Context, requestId string, opts ...Option) (*RsaObj, error) {
 	if len(requestId) == 0 {
 		return nil, errors.NewInternal(ctx, "empty requestId for fetch rsa key")
 	}

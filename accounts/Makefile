@@ -5,3 +5,9 @@ build:
 .PHONY: run
 run:
 	go run ./cmd/... -config ./internal/conf/config.yaml -i18n ./internal/i18n
+
+
+.PHONY: ent
+ent:
+	cd internal/ent \
+	&& go run entgo.io/ent/cmd/ent generate --idtype int64 ./schema

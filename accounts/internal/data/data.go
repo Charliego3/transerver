@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/wire"
 	_ "github.com/lib/pq"
@@ -77,6 +78,10 @@ func (d *Data) connectDatabase() {
 		opts = append(opts, ent.Debug())
 	}
 	d.ent = ent.NewClient(opts...)
+	err := d.ent.Schema.Create(context.Background())
+	if err != nil {
+		logger.Sugar().Errorf("Schema create error: %v", err)
+	}
 	logger.Sugar().Infof("[%s] connect successfully!!!", url.URL.Redacted())
 	return
 }

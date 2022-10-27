@@ -9,7 +9,7 @@ import "google/protobuf/wrappers.proto";
 import "validate/validate.proto";
 
 service RsaService {
-  rpc PublicKey(RsaRequest) returns (google.protobuf.BytesValue) {
+  rpc PublicKey(RsaRequest) returns (RsaReplay) {
     option (google.api.http) =  {
       get: "/rsa/v1/pubkey/{action}/{unique}"
     };
@@ -26,4 +26,9 @@ message RsaRequest {
   string action = 1 [(validate.rules).string.pattern = "[A-Za-z]+"]; // action is the name of the route to be operated next
   string unique = 2 [(validate.rules).string.pattern = "[A-Za-z0-9_-]+"];
   bool g = 3;
+}
+
+message RsaReplay {
+  string unique = 1;
+  bytes key = 2;
 }

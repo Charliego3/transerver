@@ -26,7 +26,7 @@ func (g *PubService) RegisterGRPC(s *grpc.Server) {
 	acctspb.RegisterRsaServiceServer(s, g)
 }
 
-func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*wrapperspb.BytesValue, error) {
+func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*acctspb.RsaReplay, error) {
 	if req.G {
 		uniqueId, err := g.Unique(ctx, nil)
 		if err != nil {
@@ -47,12 +47,15 @@ func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*w
 	}
 
 	requestId := fmt.Sprintf("%s:%s", req.GetAction(), req.GetUnique())
-	obj, err := g.usecase.FetchObj(ctx, requestId)
+	obj, err := g.usecase.FetchRsaObj(ctx, requestId)
 	if err != nil {
 		return nil, err
 	}
 
-	return &wrapperspb.BytesValue{Value: obj.Public}, nil
+	return &acctspb.RsaReplay{
+		Unique: req.Unique,
+		Key:    obj.Public,
+	}, nil
 }
 
 func (g *PubService) Unique(ctx context.Context, _ *emptypb.Empty) (*wrapperspb.StringValue, error) {

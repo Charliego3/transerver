@@ -19,13 +19,7 @@ func NewRegionRepo(data *Data) biz.RegionRepo {
 
 func (g *regionRepo) FindByCode(ctx context.Context, code string, fields ...string) (*ent.Region, error) {
 	if len(fields) == 0 {
-		fields = []string{
-			region.FieldID,
-			region.FieldCode,
-			region.FieldArea,
-			region.FieldImg,
-			region.FieldName,
-		}
+		fields = region.Columns
 	}
 	return g.data.ent.Region.Query().Select(fields...).Where(region.Code(code)).First(ctx)
 }

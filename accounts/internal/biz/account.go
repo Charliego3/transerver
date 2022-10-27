@@ -4,12 +4,15 @@ import (
 	"context"
 	"github.com/Charliego93/go-i18n/v2"
 	"github.com/gookit/goutil/strutil"
+	nanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/nyaruka/phonenumbers"
 	"github.com/transerver/accounts/internal/ent"
 	"github.com/transerver/accounts/internal/ent/region"
 	"github.com/transerver/commons/errors"
+	"github.com/transerver/commons/types/enums"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
+	"golang.org/x/crypto/bcrypt"
 	"strings"
 	"unicode"
 )
@@ -20,9 +23,10 @@ const (
 )
 
 type AccountRepo interface {
-	FindById(ctx context.Context, id int64) (*ent.Account, error)
-	CheckPhoneExists(string) bool
-	CheckEmailExists(string) bool
+	FindById(context.Context, int64, ...string) (*ent.Account, error)
+	Save(context.Context, *ent.Account) (*ent.Account, error)
+	CheckPhoneExists(context.Context, string) bool
+	CheckEmailExists(context.Context, string) bool
 }
 
 type AccountUsecase struct {
@@ -39,9 +43,11 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		return errors.NewArgumentf(ctx, "手机和邮箱不能同时为空")
 	}
 
+	var reg *ent.Region
 	if strutil.IsNotBlank(req.Phone) {
 		req.Region = strings.ToUpper(req.Region)
-		reg, err := g.regionRepo.FindByCode(context.Background(), req.Region, region.FieldCode, region.FieldArea)
+		var err error
+		reg, err = g.regionRepo.FindByCode(context.Background(), req.Region, region.FieldCode, region.FieldArea)
 		if err != nil {
 			return errors.NewArgumentf(ctx, &i18n.Localized{
 				MessageID:    "RegionNotFound",
@@ -55,32 +61,51 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		}
 
 		if !phonenumbers.IsValidNumberForRegion(number, req.Region) {
-			return errors.NewArgumentf(ctx, "手机号码和地区不匹配或不正确")
+			return errors.NewArgumentf(ctx, "手机号码和地区不匹配")
 		}
 
-		if g.repo.CheckPhoneExists(req.Phone) {
+		if g.repo.CheckPhoneExists(ctx, req.Phone) {
 			return errors.NewArgumentf(ctx, "手机号已经存在")
 		}
-	} else if g.repo.CheckEmailExists(req.Email) {
+	} else if g.repo.CheckEmailExists(ctx, req.Email) {
 		return errors.NewArgumentf(ctx, "邮箱已经存在")
 	}
 
 	password := utils.B64Decode(req.Password)
 	pwd, err := obj.Decrypt(ctx, password)
 	if err != nil {
-		return errors.NewArgumentf(ctx, "请求失败, 请刷新页面重试!")
+		return errors.NewInternal(ctx, "请求失败, 请刷新页面重试!")
 	}
 
-	if l, err := g.passwordLevel(ctx, pwd); err != nil {
+	pwdBuf, err := bcrypt.GenerateFromPassword(password, bcrypt.DefaultCost)
+	if err != nil {
+		return errors.NewInternal(ctx, "注册失败, 请尝试修改密码")
+	}
+
+	pwdLevel, err := g.passwordLevel(ctx, pwd)
+	if err != nil {
 		return err
-	} else {
-		_ = l
 	}
 
-	return nil
+	account := &ent.Account{
+		UserID:   nanoid.Must(),
+		Username: req.Uname,
+		Region:   req.Region,
+		Area:     reg.Area,
+		Phone:    req.Phone,
+		Email:    req.Email,
+		Password: pwdBuf,
+		PwdLevel: pwdLevel,
+		Platform: "p",
+		State:    enums.UserUnverified,
+	}
+
+	account, err = g.repo.Save(ctx, account)
+	_ = account
+	return err
 }
 
-func (g *AccountUsecase) Login(req *acctspb.LoginRequest, obj *RsaObj) {
+func (g *AccountUsecase) Login(ctx context.Context, req *acctspb.LoginRequest, obj *RsaObj) {
 
 }
 
@@ -90,7 +115,7 @@ func (g *AccountUsecase) Login(req *acctspb.LoginRequest, obj *RsaObj) {
 // if it has an upperCase character level++ and upperCase character count > 5 then level++
 // if it has a lower character level++
 // if it has more than 5 space count then level++
-func (g *AccountUsecase) passwordLevel(ctx context.Context, pwd []byte) (level int, err error) {
+func (g *AccountUsecase) passwordLevel(ctx context.Context, pwd []byte) (level uint8, err error) {
 	password := []rune(utils.String(pwd))
 	pwdLength := len(password)
 	if pwdLength < minPasswordLength {

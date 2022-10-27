@@ -27,6 +27,28 @@ func (g *AccountService) RegisterGRPC(s *grpc.Server) {
 }
 
 func (g *AccountService) Register(ctx context.Context, req *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
+	obj, err := getRsaObj(ctx, g, req)
+	err = g.usecase.Register(ctx, req, obj)
+	if err != nil {
+		return nil, err
+	}
+	return &acctspb.RegisterReply{}, nil
+}
+
+func (g *AccountService) Login(ctx context.Context, req *acctspb.LoginRequest) (*acctspb.LoginReply, error) {
+	obj, err := getRsaObj(ctx, g, req)
+	if err != nil {
+		return nil, err
+	}
+
+	g.usecase.Login(ctx, req, obj)
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+}
+
+func getRsaObj[T interface {
+	Validate() error
+	GetUnique() string
+}](ctx context.Context, g *AccountService, req T) (*biz.RsaObj, error) {
 	err := req.Validate()
 	if err != nil {
 		return nil, errors.NewArgument(ctx, err)
@@ -36,25 +58,5 @@ func (g *AccountService) Register(ctx context.Context, req *acctspb.RegisterRequ
 		return nil, err
 	}
 
-	obj, err := g.pubcase.FetchObj(ctx, fmt.Sprintf("register:%s", req.GetUnique()), biz.WithRsaNoGen)
-	if err != nil {
-		return nil, err
-	}
-
-	g.usecase.Register(ctx, req, obj)
-	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
-}
-
-func (g *AccountService) Login(ctx context.Context, req *acctspb.LoginRequest) (*acctspb.LoginReply, error) {
-	if err := g.pubcase.ValidateUniqueId(ctx, req.GetUnique()); err != nil {
-		return nil, err
-	}
-
-	obj, err := g.pubcase.FetchObj(ctx, fmt.Sprintf("register:%s", req.GetUnique()), biz.WithRsaNoGen)
-	if err != nil {
-		return nil, err
-	}
-
-	g.usecase.Login(req, obj)
-	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
+	return g.pubcase.FetchRsaObj(ctx, fmt.Sprintf("register:%s", req.GetUnique()), biz.WithRsaNoGen)
 }
