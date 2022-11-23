@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/transerver/accounts/internal/biz"
-	"github.com/transerver/commons/errors"
+	"github.com/transerver/pkg/errors"
 	"github.com/transerver/protos/acctspb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -18,7 +18,10 @@ type AccountService struct {
 	pubcase *biz.PubUsecase
 }
 
-func NewAccountService(usecase *biz.AccountUsecase, rsa *biz.PubUsecase) *AccountService {
+func NewAccountService(
+	usecase *biz.AccountUsecase,
+	rsa *biz.PubUsecase,
+) *AccountService {
 	return &AccountService{usecase: usecase, pubcase: rsa}
 }
 
@@ -26,7 +29,10 @@ func (g *AccountService) RegisterGRPC(s *grpc.Server) {
 	acctspb.RegisterAccountServiceServer(s, g)
 }
 
-func (g *AccountService) Register(ctx context.Context, req *acctspb.RegisterRequest) (*acctspb.RegisterReply, error) {
+func (g *AccountService) Register(
+	ctx context.Context,
+	req *acctspb.RegisterRequest,
+) (*acctspb.RegisterReply, error) {
 	obj, err := getRsaObj(ctx, g, req)
 	err = g.usecase.Register(ctx, req, obj)
 	if err != nil {
@@ -35,7 +41,10 @@ func (g *AccountService) Register(ctx context.Context, req *acctspb.RegisterRequ
 	return &acctspb.RegisterReply{}, nil
 }
 
-func (g *AccountService) Login(ctx context.Context, req *acctspb.LoginRequest) (*acctspb.LoginReply, error) {
+func (g *AccountService) Login(
+	ctx context.Context,
+	req *acctspb.LoginRequest,
+) (*acctspb.LoginReply, error) {
 	obj, err := getRsaObj(ctx, g, req)
 	if err != nil {
 		return nil, err

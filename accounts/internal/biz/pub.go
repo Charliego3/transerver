@@ -10,7 +10,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 	json "github.com/json-iterator/go"
 	nanoid "github.com/matoous/go-nanoid/v2"
-	"github.com/transerver/commons/errors"
+	"github.com/transerver/pkg/errors"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"strings"

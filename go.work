@@ -3,8 +3,8 @@ go 1.19
 use (
 	./accounts
 	./cli
-	./commons
 	./gateway
+	./pkg
 	./protos
 	./utils
 )

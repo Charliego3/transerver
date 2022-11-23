@@ -3,5 +3,5 @@ address: ":9090"
 
 services:
   - target: "discovery:///accounts"
-    serviceConfig:
+    config:
       loadBalancingPolicy: "round_robin"

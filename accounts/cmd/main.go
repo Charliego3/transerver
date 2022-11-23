@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/Charliego93/go-i18n/v2"
 	"github.com/transerver/accounts/internal/conf"
-	"github.com/transerver/commons/gs"
-	"github.com/transerver/commons/logger"
+	"github.com/transerver/pkg/gs"
+	"github.com/transerver/pkg/logger"
 )
 
 func main() {
@@ -21,6 +21,6 @@ func main() {
 
 func NewGRPCOpts() []gs.Option {
 	return []gs.Option{
-		gs.WithI18nOpts(i18n.NewLoaderWithPath(conf.I18nPath)),
+		gs.WithI18nOpts(i18n.NewLoaderWithPath(conf.Bootstrap.I18nPath)),
 	}
 }

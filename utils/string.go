@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"database/sql"
 	"github.com/gookit/goutil/strutil"
 	"reflect"
 	"unsafe"
@@ -51,4 +52,12 @@ func Blanks(args ...string) bool {
 		}
 	}
 	return true
+}
+
+// SQLString returns a valid sql.NullString
+func SQLString(s string) sql.NullString {
+	return sql.NullString{
+		String: s,
+		Valid:  true,
+	}
 }

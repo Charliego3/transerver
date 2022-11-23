@@ -1,17 +1,29 @@
 package main
 
 import (
-	"github.com/transerver/commons/configs"
+	"github.com/transerver/pkg/configs"
+	"github.com/transerver/pkg/resolver"
 )
 
-// Bootstrap instance
-var Bootstrap = &bootstrap{}
+var (
+	// check type
+	_ configs.IBootstrap = (*bootstrap)(nil)
+
+	// Bootstrap instance
+	Bootstrap = &bootstrap{}
+)
 
 type bootstrap struct {
 	configs.Base `json:",inline" yaml:",inline"`
+	Services     []struct {
+		Target string                 `json:"target" yaml:"target"`
+		Config resolver.ServiceConfig `json:"config" yaml:"config"`
+	} `json:"services" yaml:"services"`
 }
 
 func init() {
-	configs.RegisterBootstrap(Bootstrap)
-	configs.Parse(configs.NewFileLoader("config.yaml"))
+	configs.ParseConfig(
+		Bootstrap,
+		configs.NewFileLoader("config.yaml"),
+	)
 }

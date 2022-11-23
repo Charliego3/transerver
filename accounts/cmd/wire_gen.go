@@ -10,30 +10,23 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
-	"github.com/transerver/commons/gs"
+	"github.com/transerver/pkg/gs"
 )
 
 // Injectors from wire.go:
 
 func wireApp() (*gs.Server, func(), error) {
-	dataData, cleanup, err := data.NewData()
-	if err != nil {
-		return nil, nil, err
-	}
-	accountRepo := data.NewAccountRepo(dataData)
-	regionRepo := data.NewRegionRepo(dataData)
-	accountUsecase := biz.NewAccountUsecase(accountRepo, regionRepo)
-	pubRepo := data.NewRsaRepo(dataData)
+	accountUsecase := biz.NewAccountUsecase()
+	pubRepo := data.NewRsaRepo()
 	pubUsecase := biz.NewRsaUsecase(pubRepo)
 	accountService := service.NewAccountService(accountUsecase, pubUsecase)
 	pubService := service.NewRsaService(pubUsecase)
-	regionUsecase := biz.NewRegionUsecase(regionRepo)
+	regionUsecase := biz.NewRegionUsecase()
 	regionService := service.NewRegionService(regionUsecase)
 	v := service.MakeServices(accountService, pubService, regionService)
 	v2 := NewGRPCOpts()
-	server, cleanup2 := gs.NewGRPCServer(v, v2...)
+	server, cleanup := gs.NewGRPCServer(v, v2...)
 	return server, func() {
-		cleanup2()
 		cleanup()
 	}, nil
 }

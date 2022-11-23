@@ -1,6 +1,7 @@
 //go:build wireinject
 // +build wireinject
 
+//go:generate go run github.com/google/wire/cmd/wire
 package main
 
 import (
@@ -8,7 +9,7 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
-	"github.com/transerver/commons/gs"
+	"github.com/transerver/pkg/gs"
 )
 
 func wireApp() (*gs.Server, func(), error) {

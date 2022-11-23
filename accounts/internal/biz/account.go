@@ -2,14 +2,13 @@ package biz
 
 import (
 	"context"
+	"database/sql"
 	"github.com/Charliego93/go-i18n/v2"
 	"github.com/gookit/goutil/strutil"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/nyaruka/phonenumbers"
-	"github.com/transerver/accounts/internal/ent"
-	"github.com/transerver/accounts/internal/ent/region"
-	"github.com/transerver/commons/errors"
-	"github.com/transerver/commons/types/enums"
+	db "github.com/transerver/accounts/internal/db/sqlc"
+	"github.com/transerver/pkg/errors"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
 	"golang.org/x/crypto/bcrypt"
@@ -22,20 +21,10 @@ const (
 	maxPasswordLength = 32
 )
 
-type AccountRepo interface {
-	FindById(context.Context, int64, ...string) (*ent.Account, error)
-	Save(context.Context, *ent.Account) (*ent.Account, error)
-	CheckPhoneExists(context.Context, string) bool
-	CheckEmailExists(context.Context, string) bool
-}
+type AccountUsecase struct{}
 
-type AccountUsecase struct {
-	repo       AccountRepo
-	regionRepo RegionRepo
-}
-
-func NewAccountUsecase(repo AccountRepo, regionRepo RegionRepo) *AccountUsecase {
-	return &AccountUsecase{repo: repo, regionRepo: regionRepo}
+func NewAccountUsecase() *AccountUsecase {
+	return &AccountUsecase{}
 }
 
 func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequest, obj *RsaObj) error {
@@ -43,11 +32,12 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		return errors.NewArgumentf(ctx, "手机和邮箱不能同时为空")
 	}
 
-	var reg *ent.Region
+	var reg db.Region
+	var phone, email sql.NullString
 	if strutil.IsNotBlank(req.Phone) {
 		req.Region = strings.ToUpper(req.Region)
 		var err error
-		reg, err = g.regionRepo.FindByCode(context.Background(), req.Region, region.FieldCode, region.FieldArea)
+		reg, err = db.Query().RegionByCode(context.Background(), req.Region)
 		if err != nil {
 			return errors.NewArgumentf(ctx, &i18n.Localized{
 				MessageID:    "RegionNotFound",
@@ -64,11 +54,17 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 			return errors.NewArgumentf(ctx, "手机号码和地区不匹配")
 		}
 
-		if g.repo.CheckPhoneExists(ctx, req.Phone) {
+		phone = utils.SQLString(req.Phone)
+		exists, err := db.Query().AccountExistByPhone(ctx, phone)
+		if err != nil && exists {
 			return errors.NewArgumentf(ctx, "手机号已经存在")
 		}
-	} else if g.repo.CheckEmailExists(ctx, req.Email) {
-		return errors.NewArgumentf(ctx, "邮箱已经存在")
+	} else {
+		email = utils.SQLString(req.Email)
+		exits, err := db.Query().AccountExistsByEmail(ctx, email)
+		if err != nil && exits {
+			return errors.NewArgumentf(ctx, "邮箱已经存在")
+		}
 	}
 
 	password := utils.B64Decode(req.Password)
@@ -87,20 +83,17 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		return err
 	}
 
-	account := &ent.Account{
+	account, err := db.Query().AccountCreate(ctx, db.AccountCreateParams{
 		UserID:   nanoid.Must(),
 		Username: req.Uname,
 		Region:   req.Region,
 		Area:     reg.Area,
-		Phone:    req.Phone,
-		Email:    req.Email,
+		Phone:    phone,
+		Email:    email,
 		Password: pwdBuf,
-		PwdLevel: pwdLevel,
+		PwdLevel: int16(pwdLevel),
 		Platform: "p",
-		State:    enums.UserUnverified,
-	}
-
-	account, err = g.repo.Save(ctx, account)
+	})
 	_ = account
 	return err
 }

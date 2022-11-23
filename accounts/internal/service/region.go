@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/stretchr/objx"
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
@@ -37,11 +38,13 @@ func (g *RegionService) Regions(ctx context.Context, _ *emptypb.Empty) (*acctspb
 			Area: r.Area,
 			Img:  r.Img,
 		}
+
+		obj := objx.MustFromJSON(string(r.Name))
 		switch lang {
 		case language.English:
-			region.Name = r.Name.En
+			region.Name = obj.Get("en").String()
 		default:
-			region.Name = r.Name.Zh
+			region.Name = obj.Get("zh").String()
 		}
 		reply = append(reply, region)
 	}
