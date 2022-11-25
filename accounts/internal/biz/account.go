@@ -7,7 +7,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 	nanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/nyaruka/phonenumbers"
-	db "github.com/transerver/accounts/internal/db/sqlc"
+	"github.com/transerver/accounts/internal/data/sqlc"
 	"github.com/transerver/pkg/errors"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
@@ -21,26 +21,32 @@ const (
 	maxPasswordLength = 32
 )
 
-type AccountUsecase struct{}
+type AccountRepo interface {
+	ExistsByPhone(context.Context, sql.NullString) bool
+	ExistsByEmail(context.Context, sql.NullString) bool
+	Create(context.Context, db.AccountCreateParams) (db.Account, error)
+	ByUname(context.Context, string) (db.Account, error)
+}
 
-func NewAccountUsecase() *AccountUsecase {
-	return &AccountUsecase{}
+type AccountUsecase struct {
+	repo   AccountRepo
+	region RegionRepo
+}
+
+func NewAccountUsecase(repo AccountRepo, region RegionRepo) *AccountUsecase {
+	return &AccountUsecase{repo, region}
 }
 
 func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequest, obj *RsaObj) error {
-	if utils.Blanks(req.Phone, req.Email) {
-		return errors.NewArgumentf(ctx, "手机和邮箱不能同时为空")
-	}
-
 	var reg db.Region
 	var phone, email sql.NullString
 	if strutil.IsNotBlank(req.Phone) {
 		req.Region = strings.ToUpper(req.Region)
 		var err error
-		reg, err = db.Query().RegionByCode(context.Background(), req.Region)
+		reg, err = g.region.ByCode(context.Background(), req.Region)
 		if err != nil {
 			return errors.NewArgumentf(ctx, &i18n.Localized{
-				MessageID:    "RegionNotFound",
+				MessageID:    "暂时不支持该地区",
 				TemplateData: req.Region,
 			})
 		}
@@ -55,16 +61,16 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		}
 
 		phone = utils.SQLString(req.Phone)
-		exists, err := db.Query().AccountExistByPhone(ctx, phone)
-		if err != nil && exists {
+		if g.repo.ExistsByPhone(ctx, phone) {
 			return errors.NewArgumentf(ctx, "手机号已经存在")
 		}
-	} else {
+	} else if strutil.IsBlank(req.Email) {
 		email = utils.SQLString(req.Email)
-		exits, err := db.Query().AccountExistsByEmail(ctx, email)
-		if err != nil && exits {
+		if g.repo.ExistsByEmail(ctx, email) {
 			return errors.NewArgumentf(ctx, "邮箱已经存在")
 		}
+	} else {
+		return errors.NewArgumentf(ctx, "手机和邮箱不能同时为空")
 	}
 
 	password := utils.B64Decode(req.Password)
@@ -83,7 +89,7 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		return err
 	}
 
-	account, err := db.Query().AccountCreate(ctx, db.AccountCreateParams{
+	account, err := g.repo.Create(ctx, db.AccountCreateParams{
 		UserID:   nanoid.Must(),
 		Username: req.Uname,
 		Region:   req.Region,
@@ -98,8 +104,29 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 	return err
 }
 
-func (g *AccountUsecase) Login(ctx context.Context, req *acctspb.LoginRequest, obj *RsaObj) {
+func (g *AccountUsecase) Login(ctx context.Context, req *acctspb.LoginRequest, obj *RsaObj) error {
+	account, err := g.repo.ByUname(ctx, req.Uname)
+	if err != nil {
+		return err
+	}
+	if err != nil {
+		return errors.NewArgumentf(ctx, "账户不存在")
+	}
 
+	// check req.Code
+	if strutil.IsBlank(req.Code) {
+		return errors.NewArgumentf(ctx, "验证码错误")
+	}
+
+	password, err := obj.Decrypt(ctx, req.Password)
+	if err != nil {
+		return err
+	}
+	err = bcrypt.CompareHashAndPassword(account.Password, password)
+	if err != nil {
+		return errors.NewArgumentf(ctx, "密码不正确")
+	}
+	return nil
 }
 
 // passwordLevel returns level

@@ -30,3 +30,13 @@ WHERE phone = $1;
 SELECT true::bool
 FROM accounts
 WHERE email = $1;
+
+-- name: AccountByPhone :one
+SELECT *
+FROM accounts
+WHERE phone = $1;
+
+-- name: AccountByEmail :one
+SELECT *
+FROM accounts
+WHERE email = $1;

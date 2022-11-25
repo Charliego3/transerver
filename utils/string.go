@@ -61,3 +61,7 @@ func SQLString(s string) sql.NullString {
 		Valid:  true,
 	}
 }
+
+func IsEmail(email string) bool {
+	return false
+}

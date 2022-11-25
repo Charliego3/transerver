@@ -37,11 +37,11 @@ message RegisterReply {
 }
 
 message LoginRequest {
-  string unique = 1;
-  string region = 2;
-  string uname = 3;
-  string code = 4;
-  bytes password = 5;
+  string unique = 1 [(validate.rules).string.pattern = "[A-Za-z0-9_-]+"];
+  string region = 2 [(validate.rules).string = {pattern: "[A-Z]{2,}"}];
+  string uname = 3 [(validate.rules).string.pattern = "\\S+"];
+  string code = 4 [(validate.rules).string.len = 6];
+  bytes password = 5 [(validate.rules).bytes.pattern = "\\S+"];
 }
 
 message LoginReply {

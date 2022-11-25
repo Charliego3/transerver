@@ -35,7 +35,7 @@ func NewRsaUsecase(repo PubRepo) *PubUsecase {
 
 func (g *PubUsecase) FetchRsaObj(ctx context.Context, requestId string, opts ...Option) (*RsaObj, error) {
 	if len(requestId) == 0 {
-		return nil, errors.NewInternal(ctx, "empty requestId for fetch rsa key")
+		return nil, errors.NewArgumentf(ctx, "刷新页面重试")
 	}
 
 	requestId = g.solveId(requestId)
@@ -79,7 +79,7 @@ func (g *PubUsecase) FetchUniqueId(ctx context.Context, ttl time.Duration) (stri
 
 func (g *PubUsecase) ValidateUniqueId(ctx context.Context, uniqueId string) error {
 	if strutil.IsBlank(uniqueId) || !g.repo.UniqueIdExists(ctx, uniqueId) {
-		return errors.New(ctx, codes.ResourceExhausted, "Timed out, please refresh the page and try again!")
+		return errors.New(ctx, codes.ResourceExhausted, "刷新页面重试")
 	}
 	return nil
 }

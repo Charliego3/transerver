@@ -16,12 +16,14 @@ import (
 // Injectors from wire.go:
 
 func wireApp() (*gs.Server, func(), error) {
-	accountUsecase := biz.NewAccountUsecase()
+	accountRepo := data.NewAccountRepo()
+	regionRepo := data.NewRegionRepo()
+	accountUsecase := biz.NewAccountUsecase(accountRepo, regionRepo)
 	pubRepo := data.NewRsaRepo()
 	pubUsecase := biz.NewRsaUsecase(pubRepo)
 	accountService := service.NewAccountService(accountUsecase, pubUsecase)
 	pubService := service.NewRsaService(pubUsecase)
-	regionUsecase := biz.NewRegionUsecase()
+	regionUsecase := biz.NewRegionUsecase(regionRepo)
 	regionService := service.NewRegionService(regionUsecase)
 	v := service.MakeServices(accountService, pubService, regionService)
 	v2 := NewGRPCOpts()

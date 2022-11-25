@@ -1,2 +1,3 @@
 InvalidArgument: "{{.}} verification failed"
 RegionNotFound: "Not found region with: [{{.}}]"
+"刷新页面重试": "Timed out, please refresh the page and try again!"

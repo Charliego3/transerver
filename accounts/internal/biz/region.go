@@ -2,15 +2,22 @@ package biz
 
 import (
 	"context"
-	db "github.com/transerver/accounts/internal/db/sqlc"
+	db "github.com/transerver/accounts/internal/data/sqlc"
 )
 
-type RegionUsecase struct{}
+type RegionRepo interface {
+	List(context.Context) ([]db.Region, error)
+	ByCode(context.Context, string) (db.Region, error)
+}
 
-func NewRegionUsecase() *RegionUsecase {
-	return &RegionUsecase{}
+type RegionUsecase struct {
+	repo RegionRepo
+}
+
+func NewRegionUsecase(repo RegionRepo) *RegionUsecase {
+	return &RegionUsecase{repo: repo}
 }
 
 func (g *RegionUsecase) Regions(ctx context.Context) ([]db.Region, error) {
-	return db.Query().RegionList(ctx)
+	return g.repo.List(ctx)
 }

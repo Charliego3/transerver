@@ -7,7 +7,7 @@ CREATE TABLE public.regions
     name JSONB               NOT NULL
 );
 CREATE UNIQUE INDEX regions_code_key ON regions USING BTREE (code);
-CREATE UNIQUE INDEX regions_area_key ON regions USING BTREE (area);
+CREATE INDEX regions_area_key ON regions USING BTREE (area);
 
 
 CREATE TABLE public.accounts
