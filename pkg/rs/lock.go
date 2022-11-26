@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	rv9 "github.com/go-redis/redis/v9"
-	"github.com/transerver/pkg/logger"
 	"io"
 	"strconv"
 	"sync"
@@ -112,11 +111,4 @@ func (l *Lock) Release() error {
 		return ErrLockNotHeld
 	}
 	return nil
-}
-
-func (l *Lock) LoggedRelease() {
-	err := l.Release()
-	if err != nil {
-		logger.Sugar().Errorf("redislock:release %s, key: %s", err, l.Key)
-	}
 }

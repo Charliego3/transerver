@@ -92,6 +92,7 @@ func C() *Client {
 		}
 
 		c = client
+		logger.Sugar().Infof("connect etcd: %s", c.Endpoints())
 	})
 	return c
 }

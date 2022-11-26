@@ -34,6 +34,9 @@ func (g *AccountService) Register(
 	req *acctspb.RegisterRequest,
 ) (*acctspb.RegisterReply, error) {
 	obj, err := getRsaObj(ctx, g, req)
+	if err != nil {
+		return nil, err
+	}
 	err = g.usecase.Register(ctx, req, obj)
 	if err != nil {
 		return nil, err
@@ -60,7 +63,7 @@ func getRsaObj[T interface {
 }](ctx context.Context, g *AccountService, req T) (*biz.RsaObj, error) {
 	err := req.Validate()
 	if err != nil {
-		return nil, errors.NewArgument(ctx, err)
+		return nil, errors.NewValidate(ctx, err)
 	}
 
 	if err = g.pubcase.ValidateUniqueId(ctx, req.GetUnique()); err != nil {

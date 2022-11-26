@@ -48,5 +48,10 @@ func (r *accountRepo) ByUname(ctx context.Context, uname string) (db.Account, er
 	} else {
 		account, err = queries.AccountByPhone(ctx, utils.SQLString(uname))
 	}
+	if err == sql.ErrNoRows {
+		return account, errors.NewArgumentf(ctx, "用户不存在")
+	} else if err != nil {
+		err = errors.NewInternal(ctx, "操作失败, 请重试")
+	}
 	return account, err
 }

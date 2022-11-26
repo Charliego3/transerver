@@ -73,7 +73,7 @@ func (g *AccountUsecase) Register(ctx context.Context, req *acctspb.RegisterRequ
 		return errors.NewArgumentf(ctx, "手机和邮箱不能同时为空")
 	}
 
-	password := utils.B64Decode(req.Password)
+	password := utils.Bytes(req.Password)
 	pwd, err := obj.Decrypt(ctx, password)
 	if err != nil {
 		return errors.NewInternal(ctx, "请求失败, 请刷新页面重试!")
@@ -118,7 +118,7 @@ func (g *AccountUsecase) Login(ctx context.Context, req *acctspb.LoginRequest, o
 		return errors.NewArgumentf(ctx, "验证码错误")
 	}
 
-	password, err := obj.Decrypt(ctx, req.Password)
+	password, err := obj.Decrypt(ctx, utils.Bytes(req.Password))
 	if err != nil {
 		return err
 	}
@@ -129,12 +129,12 @@ func (g *AccountUsecase) Login(ctx context.Context, req *acctspb.LoginRequest, o
 	return nil
 }
 
-// passwordLevel returns level
-// if it has a special rune level++ and special count > 5 then level++
-// if it has a number level++ and number count > 5 then level++
-// if it has an upperCase character level++ and upperCase character count > 5 then level++
-// if it has a lower character level++
-// if it has more than 5 space count then level++
+// passwordLevel 返回密码等级
+// 存在特殊字符等级+1，特殊字符>5等级+1
+// 存在数字等级+1，数字>5等级+1
+// 存在大写字符等级+1，大写字符>5等级+1
+// 存在小写字符等级+1
+// 存在空白字符等级+1
 func (g *AccountUsecase) passwordLevel(ctx context.Context, pwd []byte) (level uint8, err error) {
 	password := []rune(utils.String(pwd))
 	pwdLength := len(password)

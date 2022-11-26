@@ -1,16 +1,17 @@
 package main
 
 import (
+	"github.com/Charliego93/go-i18n/v2"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/transerver/pkg/gw"
 	"github.com/transerver/pkg/logger"
 	"github.com/transerver/pkg/resolver"
 	"google.golang.org/grpc"
-	_ "google.golang.org/grpc/balancer/grpclb"
-	_ "google.golang.org/grpc/balancer/rls"
-	_ "google.golang.org/grpc/balancer/roundrobin"
-	_ "google.golang.org/grpc/balancer/weightedroundrobin"
-	_ "google.golang.org/grpc/balancer/weightedtarget"
+	//_ "google.golang.org/grpc/balancer/grpclb"
+	//_ "google.golang.org/grpc/balancer/rls"
+	//_ "google.golang.org/grpc/balancer/roundrobin"
+	//_ "google.golang.org/grpc/balancer/weightedroundrobin"
+	//_ "google.golang.org/grpc/balancer/weightedtarget"
 	"google.golang.org/grpc/credentials/insecure"
 	"path/filepath"
 )
@@ -45,6 +46,7 @@ func main() {
 		logger.Sugar().Fatalf("doesn't declare dialer for: %q", service.Target)
 	}
 
+	i18n.Initialize()
 	app, err := gw.NewGatewayServer(opts...)
 	if err != nil {
 		logger.Sugar().Fatal("create gateway fail", err)

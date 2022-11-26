@@ -37,7 +37,7 @@ func (g *PubService) PublicKey(ctx context.Context, req *acctspb.RsaRequest) (*a
 
 	err := req.Validate()
 	if err != nil {
-		return nil, errors.NewArgument(ctx, err)
+		return nil, errors.NewValidate(ctx, err)
 	}
 
 	if !req.G {

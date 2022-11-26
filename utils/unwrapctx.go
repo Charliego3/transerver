@@ -20,9 +20,9 @@ func SetDefaultLanguage(lang language.Tag) {
 func Language(ctx context.Context) language.Tag {
 	lang := DefaultLanguage
 	if l, ok := MDExtract(ctx, "accept-language"); ok {
-		l := i18n.ParseFromHeader(l)
-		if l != language.Und {
-			lang = l
+		tag := i18n.ParseFromHeader(l)
+		if tag != language.Und {
+			lang = tag
 		}
 	}
 	return lang

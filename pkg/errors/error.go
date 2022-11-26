@@ -62,7 +62,7 @@ func NewInternal[T i18n.Message](ctx context.Context, messageId T) error {
 	return New(ctx, codes.Internal, messageId)
 }
 
-func NewArgument(ctx context.Context, err error) error {
+func NewValidate(ctx context.Context, err error) error {
 	if e, ok := err.(interface{ Field() string }); ok {
 		return NewArgumentf(ctx, &i18n.Localized{
 			MessageID:    "InvalidArgument",

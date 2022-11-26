@@ -29,7 +29,7 @@ message RegisterRequest {
   string phone = 4 [(validate.rules).string = {ignore_empty: true, pattern: "[0-9]+"}];
   string email = 5 [(validate.rules).string = {ignore_empty: true, email: true}];
   string code = 6 [(validate.rules).string.len = 6];
-  bytes password = 7 [(validate.rules).bytes.ignore_empty = false];
+  string password = 7 [(validate.rules).string.pattern = "\\S+"];
 }
 
 message RegisterReply {
@@ -41,7 +41,7 @@ message LoginRequest {
   string region = 2 [(validate.rules).string = {pattern: "[A-Z]{2,}"}];
   string uname = 3 [(validate.rules).string.pattern = "\\S+"];
   string code = 4 [(validate.rules).string.len = 6];
-  bytes password = 5 [(validate.rules).bytes.pattern = "\\S+"];
+  string password = 5 [(validate.rules).string.pattern = "\\S+"];
 }
 
 message LoginReply {

@@ -22,5 +22,5 @@ message RegionReply {
     string name = 4;
   }
 
-  repeated Region Regions = 1;
+  repeated Region regions = 1;
 }
