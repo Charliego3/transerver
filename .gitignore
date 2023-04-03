@@ -3,6 +3,7 @@
 !**/ent/generate.go
 !**/ent/schema
 
+**/node_modules
 
 **/*.pb.go
 **/*.pb.gw.go

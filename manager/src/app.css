@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    :root {
+        --color-background: 185, 28, 28;
+    }
+    .theme-dark {
+        --color-background: 22, 24, 35;
+    }
+    .theme-light {
+        --color-background: 255, 164, 0;
+    }
+
+    @font-face {
+        font-family: 'DM Mono';
+        font-style: normal;
+        font-weight: 500;
+        font-display: swap;
+        src: url('/fonts/DMMono-Medium.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'Splash';
+        font-style: normal;
+        font-display: swap;
+        src: url('/fonts/Splash-Regular.ttf') format('truetype');
+    }
+}
