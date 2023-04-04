@@ -1,6 +1,6 @@
 module github.com/transerver/cli
 
-go 1.19
+go 1.20
 
 require (
 	github.com/charmbracelet/bubbles v0.14.0

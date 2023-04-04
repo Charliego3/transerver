@@ -3,25 +3,26 @@ package utils
 import (
 	"database/sql"
 	"github.com/gookit/goutil/strutil"
-	"reflect"
 	"unsafe"
 )
 
 func String(data []byte) string {
-	hdr := *(*reflect.SliceHeader)(unsafe.Pointer(&data))
-	return *(*string)(unsafe.Pointer(&reflect.StringHeader{
-		Data: hdr.Data,
-		Len:  hdr.Len,
-	}))
+	//hdr := *(*reflect.SliceHeader)(unsafe.Pointer(&data))
+	//return *(*string)(unsafe.Pointer(&reflect.StringHeader{
+	//	Data: hdr.Data,
+	//	Len:  hdr.Len,
+	//}))
+	return unsafe.String(&data[0], len(data))
 }
 
 func Bytes(data string) []byte {
-	hdr := *(*reflect.StringHeader)(unsafe.Pointer(&data))
-	return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-		Data: hdr.Data,
-		Len:  hdr.Len,
-		Cap:  hdr.Len,
-	}))
+	//hdr := *(*reflect.StringHeader)(unsafe.Pointer(&data))
+	//return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
+	//	Data: hdr.Data,
+	//	Len:  hdr.Len,
+	//	Cap:  hdr.Len,
+	//}))
+	return unsafe.Slice(unsafe.StringData(data), len(data))
 }
 
 // AnyBlank 存在任何一个字符串为空时返回true, 否则返回false

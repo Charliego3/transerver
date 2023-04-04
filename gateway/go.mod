@@ -1,6 +1,6 @@
 module github.com/transerver/gateway
 
-go 1.19
+go 1.20
 
 require (
 	github.com/Charliego93/go-i18n/v2 v2.1.3
