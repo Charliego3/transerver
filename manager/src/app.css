@@ -5,12 +5,47 @@
 @layer base {
     :root {
         --color-background: 185, 28, 28;
+        --accent-color: 55, 48, 163;
+        --text-color: 0, 0, 0;
+        --second-color: 55, 65, 81;
     }
     .theme-dark {
         --color-background: 22, 24, 35;
+        --accent-color: 161, 98, 7;
+        --text-color: 255, 255, 255;
+        --second-color: 156, 163, 175;
     }
     .theme-light {
         --color-background: 255, 164, 0;
+        --accent-color: 55, 48, 163;
+        --text-color: 0, 0, 0;
+        --second-color: 55, 65, 81;
+    }
+
+    [type="text"],
+    [type="email"],
+    [type="url"],
+    [type="password"],
+    [type="number"],
+    [type="date"],
+    [type="datetime-local"],
+    [type="month"],
+    [type="search"],
+    [type="tel"],
+    [type="time"],
+    [type="week"],
+    [multiple],
+    textarea,
+    select {
+        @apply w-full border rounded-lg shadow-sm focus:border-skin-accent focus:ring-skin-accent;
+    }
+    [type="checkbox"],
+    [type="radio"] {
+        @apply border rounded text-skin-accent focus:ring-skin-accent dark:focus:ring-skin-accent;
+    }
+
+    input {
+        @apply text-black w-full shadow-sm focus:ring-2 font-thin placeholder-gray-300 focus:placeholder-gray-400 placeholder:font-thin;
     }
 
     @font-face {
@@ -18,13 +53,28 @@
         font-style: normal;
         font-weight: 500;
         font-display: swap;
-        src: url('/fonts/DMMono-Medium.ttf') format('truetype');
+        src: url('fonts/DMMono-Medium.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'IBMPlexMono';
+        font-style: normal;
+        font-display: swap;
+        src: url('fonts/IBMPlexMono-Regular.ttf') format('truetype');
+    }
+
+    @font-face {
+        font-family: 'IBMPlexMono';
+        font-style: normal;
+        font-weight: bold;
+        font-display: swap;
+        src: url('fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
     }
 
     @font-face {
         font-family: 'Splash';
         font-style: normal;
         font-display: swap;
-        src: url('/fonts/Splash-Regular.ttf') format('truetype');
+        src: url('fonts/Splash-Regular.ttf') format('truetype');
     }
 }
