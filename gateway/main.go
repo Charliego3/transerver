@@ -3,9 +3,9 @@ package main
 import (
 	"github.com/Charliego93/go-i18n/v2"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/transerver/pkg/gw"
-	"github.com/transerver/pkg/logger"
-	"github.com/transerver/pkg/resolver"
+	"github.com/transerver/pkg1/gw"
+	"github.com/transerver/pkg1/logger"
+	"github.com/transerver/pkg1/resolver"
 	"google.golang.org/grpc"
 	//_ "google.golang.org/grpc/balancer/grpclb"
 	//_ "google.golang.org/grpc/balancer/rls"

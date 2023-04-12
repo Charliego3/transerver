@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/transerver/pkg/configs"
+	"github.com/transerver/pkg1/configs"
 	"os"
 	"sync"
 

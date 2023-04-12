@@ -10,7 +10,7 @@ import (
 	"github.com/transerver/accounts/internal/biz"
 	"github.com/transerver/accounts/internal/data"
 	"github.com/transerver/accounts/internal/service"
-	"github.com/transerver/pkg/gs"
+	"github.com/transerver/pkg1/gs"
 )
 
 // Injectors from wire.go:

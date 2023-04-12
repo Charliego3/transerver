@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"github.com/transerver/accounts/internal/conf"
-	"github.com/transerver/pkg/logger"
+	"github.com/transerver/pkg1/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"testing"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/go-redis/redis/v9"
 	"github.com/transerver/accounts/internal/biz"
-	"github.com/transerver/pkg/errors"
+	"github.com/transerver/pkg1/errors"
 	"time"
 )
 

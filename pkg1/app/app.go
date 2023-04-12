@@ -2,8 +2,8 @@ package app
 
 import (
 	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/pkg/configs"
-	"github.com/transerver/pkg/logger"
+	"github.com/transerver/pkg1/configs"
+	"github.com/transerver/pkg1/logger"
 )
 
 var Name string

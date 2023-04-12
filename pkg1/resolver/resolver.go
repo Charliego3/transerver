@@ -2,7 +2,7 @@ package resolver
 
 import (
 	"context"
-	"github.com/transerver/pkg/logger"
+	"github.com/transerver/pkg1/logger"
 	"go.etcd.io/etcd/client/v3/naming/endpoints"
 	"google.golang.org/grpc/resolver"
 	"google.golang.org/grpc/serviceconfig"

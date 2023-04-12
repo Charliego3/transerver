@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/transerver/pkg/gw"
+	"github.com/transerver/pkg1/gw"
 	"github.com/transerver/protos/acctspb"
 )
 

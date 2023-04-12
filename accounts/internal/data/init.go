@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	rv9 "github.com/go-redis/redis/v9"
 	db "github.com/transerver/accounts/internal/data/sqlc"
-	"github.com/transerver/pkg/configs"
-	"github.com/transerver/pkg/logger"
-	"github.com/transerver/pkg/rs"
+	"github.com/transerver/pkg1/configs"
+	"github.com/transerver/pkg1/logger"
+	"github.com/transerver/pkg1/rs"
 	"github.com/xo/dburl"
 )
 

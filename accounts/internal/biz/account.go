@@ -8,7 +8,7 @@ import (
 	nanoid "github.com/matoous/go-nanoid/v2"
 	"github.com/nyaruka/phonenumbers"
 	"github.com/transerver/accounts/internal/data/sqlc"
-	"github.com/transerver/pkg/errors"
+	"github.com/transerver/pkg1/errors"
 	"github.com/transerver/protos/acctspb"
 	"github.com/transerver/utils"
 	"golang.org/x/crypto/bcrypt"

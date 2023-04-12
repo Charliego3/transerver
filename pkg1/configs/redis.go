@@ -1,7 +1,7 @@
 package configs
 
 import (
-	"github.com/transerver/pkg/rs"
+	"github.com/transerver/pkg1/rs"
 	"time"
 )
 

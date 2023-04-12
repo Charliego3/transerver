@@ -11,4 +11,4 @@ sql:
         json_tags_case_style: "camel"
         overrides:
           - column: "accounts.state"
-            go_type: "github.com/transerver/pkg/types/enums.UserState"
+            go_type: "github.com/transerver/pkg1/types/enums.UserState"

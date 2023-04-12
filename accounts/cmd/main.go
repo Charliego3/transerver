@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/Charliego93/go-i18n/v2"
 	"github.com/transerver/accounts/internal/conf"
-	"github.com/transerver/pkg/gs"
-	"github.com/transerver/pkg/logger"
+	"github.com/transerver/pkg1/gs"
+	"github.com/transerver/pkg1/logger"
 )
 
 func main() {

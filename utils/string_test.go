@@ -8,5 +8,5 @@ import (
 func TestToString(t *testing.T) {
 	var data = "zxcvbnm,"
 	bs := Bytes(data)
-	fmt.Printf("%s", bs)
+	fmt.Printf("%s", String(bs))
 }

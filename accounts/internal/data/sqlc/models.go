@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/transerver/pkg/types/enums"
+	"github.com/transerver/pkg1/types/enums"
 )
 
 type Account struct {

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/transerver/pkg/configs"
-	"github.com/transerver/pkg/resolver"
+	"github.com/transerver/pkg1/configs"
+	"github.com/transerver/pkg1/resolver"
 )
 
 var (

@@ -5,6 +5,7 @@ use (
 	./cli
 	./gateway
 	./pkg
+	./pkg1
 	./protos
 	./utils
 )

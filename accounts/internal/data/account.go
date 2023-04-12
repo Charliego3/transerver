@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 	"github.com/transerver/accounts/internal/biz"
 	db "github.com/transerver/accounts/internal/data/sqlc"
-	"github.com/transerver/pkg/errors"
+	"github.com/transerver/pkg1/errors"
 	"github.com/transerver/utils"
 )
 

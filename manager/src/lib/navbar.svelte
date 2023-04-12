@@ -12,28 +12,28 @@
     let maxWidth = minWidth;
     let selected = data.menus[0].url;
 
-    const onMouseDown = (e) => {
+    const onMouseDown = (e: MouseEvent) => {
         e.preventDefault();
         if (e.button !== 0) return;
         window.addEventListener('mouseup', onMouseUp);
-        window.addEventListener('touchend', onMouseUp);
+        // window.addEventListener('touchend', onMouseUp);
         window.addEventListener('mousemove', onMouseMove);
-        window.addEventListener('touchmove', onMouseMove);
+        // window.addEventListener('touchmove', onMouseMove);
     }
 
-    const onMouseMove = (e) => {
+    const onMouseMove = (e: MouseEvent) => {
         e.preventDefault();
-        if (e.button !== 0) return;
+        if ((e as MouseEvent).button !== 0) return;
         if (e.x <= minWidth || e.x >= maxWidth) return;
         update(obj => obj.sidebarWidth = e.x);
     }
 
-    const onMouseUp = (e) => {
+    const onMouseUp = (e: MouseEvent) => {
         e.preventDefault();
         window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('touchmove', onMouseMove);
+        // window.removeEventListener('touchmove', onMouseMove);
         window.removeEventListener('mouseup', onMouseUp);
-        window.removeEventListener('touchend', onMouseUp);
+        // window.removeEventListener('touchend', onMouseUp);
     }
 </script>
 

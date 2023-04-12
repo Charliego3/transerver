@@ -3,7 +3,7 @@ package gw
 import (
 	"context"
 	"github.com/gorilla/mux"
-	"github.com/transerver/pkg/errors"
+	"github.com/transerver/pkg1/errors"
 	"io"
 	"net/http"
 	"net/textproto"

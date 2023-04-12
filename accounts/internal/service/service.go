@@ -2,7 +2,7 @@ package service
 
 import (
 	"github.com/google/wire"
-	"github.com/transerver/pkg/gs"
+	"github.com/transerver/pkg1/gs"
 )
 
 var ProviderSet = wire.NewSet(

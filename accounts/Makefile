@@ -1,10 +1,10 @@
 .PHONY: build
 build:
-	go build -ldflags="-X github.com/transerver/pkg/app.Name=accounts" -o ../bin/accounts .
+	go build -ldflags="-X github.com/transerver/pkg1/app.Name=accounts" -o ../bin/accounts .
 
 .PHONY: run
 run:
-	go run ./cmd/... -config ./internal/conf/config.yaml -i18n ./internal/i18n
+	go run ./cmd/... --config ./internal/conf/config.yaml -i18n ./internal/i18n
 
 .PHONY: postgres
 postgres:

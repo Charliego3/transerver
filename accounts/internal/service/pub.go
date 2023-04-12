@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/transerver/accounts/internal/biz"
-	"github.com/transerver/pkg/errors"
+	"github.com/transerver/pkg1/errors"
 	"github.com/transerver/protos/acctspb"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"

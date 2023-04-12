@@ -2,7 +2,7 @@ package conf
 
 import (
 	"github.com/charliego93/flagx"
-	"github.com/transerver/pkg/configs"
+	"github.com/transerver/pkg1/configs"
 )
 
 var (
