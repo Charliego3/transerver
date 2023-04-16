@@ -36,7 +36,7 @@
             h-full w-[8px] absolute -right-[5px] cursor-col-resize"
          on:mousedown={onMouseDown}></div>
     <div class="w-full h-full absolute flex flex-col divide-y divide-skin-fill">
-        <div class="relative p-2 pb-0">
+        <div class="relative p-2 pt-3 pb-1">
             <label for="email" class="absolute h-[32px] px-2 flex items-center">
                 <Search class="dark:fill-gray-300 dark:gray-500 scale-75"/>
             </label>
@@ -46,7 +46,7 @@
                    focus:placeholder-gray-500/60 placeholder-gray-500"/>
         </div>
 
-        <div class="overflow-scroll h-full pb-2 pl-2 pr-2">
+        <div class="overflow-scroll h-full p-2">
             {#each data.menus as menu}
                 <MenuItem data={menu} {selected}/>
             {/each}

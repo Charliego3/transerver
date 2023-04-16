@@ -51,29 +51,6 @@
     }
 
     @font-face {
-        font-family: 'DM Mono';
-        font-style: normal;
-        font-weight: 500;
-        font-display: swap;
-        src: url('fonts/DMMono-Medium.ttf') format('truetype');
-    }
-
-    @font-face {
-        font-family: 'IBMPlexMono';
-        font-style: normal;
-        font-display: swap;
-        src: url('fonts/IBMPlexMono-Regular.ttf') format('truetype');
-    }
-
-    @font-face {
-        font-family: 'IBMPlexMono';
-        font-style: normal;
-        font-weight: bold;
-        font-display: swap;
-        src: url('fonts/IBMPlexMono-SemiBold.ttf') format('truetype');
-    }
-
-    @font-face {
         font-family: 'Splash';
         font-style: normal;
         font-display: swap;

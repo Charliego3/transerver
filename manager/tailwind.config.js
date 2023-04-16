@@ -20,8 +20,6 @@ export default {
                 }
             },
             fontFamily: {
-                dm: "'DM Mono'",
-                ibm: "'IBMPlexMono', monospace",
                 splash: "'Splash', cursive",
             },
             textColor: {
