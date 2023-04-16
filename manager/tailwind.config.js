@@ -14,6 +14,11 @@ export default {
     content: ['./src/**/*.{html,js,svelte,ts}'],
     theme: {
         extend: {
+            divideColor: {
+                skin: {
+                    fill : withOpacity('--divide-color'),
+                }
+            },
             fontFamily: {
                 dm: "'DM Mono'",
                 ibm: "'IBMPlexMono', monospace",

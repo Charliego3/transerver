@@ -14,12 +14,14 @@
         --accent-color: 161, 98, 7;
         --text-color: 255, 255, 255;
         --second-color: 156, 163, 175;
+        --divide-color: 36, 40, 50;
     }
     .theme-light {
         --color-background: 255, 164, 0;
         --accent-color: 55, 48, 163;
         --text-color: 0, 0, 0;
         --second-color: 55, 65, 81;
+        --divide-color: 175, 179, 183;
     }
 
     [type="text"],
