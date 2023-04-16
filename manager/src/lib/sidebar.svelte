@@ -3,6 +3,7 @@
     import { defaults, update } from "./stores/defaults";
     import type { Menus } from "./types/menus";
     import { page } from '$app/stores';
+    import MenuItem from './menuItem.svelte'
 
     export let data: Menus;
     const minWidth = 199;
@@ -46,12 +47,7 @@
         </div>
 
         {#each data.menus as menu}
-            <a href={menu.url} class="rounded-md h-[38px] px-3 cursor-pointer flex items-center transition duration-100 gap-[8px]
-                 {selected !== menu.url ? 'hover:bg-orange-800/10 dark:hover:bg-gray-800/60 hover:font-bold'
-                 : 'bg-skin-accent shadow-lg drop-shadow-lg text-white'}" on:click={() => {selected = menu.url}}>
-                <img alt={menu.name} class="w-[20px]" src={menu.icon}/>
-                {menu.name}
-            </a>
+            <MenuItem data={menu} {selected}/>
         {/each}
     </div>
 </nav>

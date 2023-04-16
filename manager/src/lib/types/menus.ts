@@ -3,7 +3,8 @@ export interface Menus {
 }
 
 export interface MenuItem {
-    url: string;
+    url: string | null;
     name: string;
     icon: string;
+    children: MenuItem[] | null;
 }
