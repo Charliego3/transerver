@@ -1,5 +1,5 @@
 <script lang="ts">
-    import Logo from "/src/images/icons/logo.svg?component";
+    import Logo from "../../../images/icons/logo.svg?component";
 
     import { enhance } from '$app/forms';
     import type { SubmitFunction } from './$types';

@@ -1,5 +1,5 @@
 <script>
-    import Logo from "/src/images/icons/logo.svg?component";
+    import Logo from "../images/icons/logo.svg?component";
 </script>
 
 <div class="flex-none h-[48px] shadow-lg drop-shadow-lg w-full flex items-center justify-between px-4">
