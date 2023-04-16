@@ -1,7 +1,7 @@
 <script lang="ts">
     import Search from "../images/icons/search.svg?component";
     import { defaults, update } from "./stores/defaults";
-    import type { Menus } from "./types/nav";
+    import type { Menus } from "./types/menus";
     import { page } from '$app/stores';
 
     export let data: Menus;

@@ -1,6 +1,6 @@
 <script lang="ts">
     import Header from '$lib/header.svelte';
-    import Navbar from '$lib/navbar.svelte';
+    import Navbar from '$lib/sidebar.svelte';
     import type { LayoutData } from './$types';
     export let data: LayoutData;
 </script>
