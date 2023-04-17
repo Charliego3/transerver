@@ -50,6 +50,41 @@
         @apply text-black w-full shadow-sm focus:ring-2 font-thin placeholder-gray-300 focus:placeholder-gray-400 placeholder:font-thin;
     }
 
+    /* 整个滚动条 */
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    /* 滚动条上的滚动滑块 */
+    ::-webkit-scrollbar-thumb {
+        @apply bg-skin-accent/50 rounded-full
+    }
+
+    /* 滚动条滑块 */
+    ::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+
+    /* 滚动条上的按钮(上下箭头) */
+    ::-webkit-scrollbar-button {
+        display: none;
+    }
+
+    /* 当同时有垂直滚动条和水平滚动条时交汇的部分。通常是浏览器窗口的右下角。 */
+    ::-webkit-scrollbar-corner {
+        display: none;
+    }
+
+    /* 滚动条没有滑块的轨道部分。 */
+    ::-webkit-scrollbar-track-piece {
+        display: none;
+    }
+
+    /* 出现在某些元素底角的可拖动调整大小的滑块。 */
+    ::-webkit-resizer {
+        display: none;
+    }
+
     @font-face {
         font-family: 'Splash';
         font-style: normal;

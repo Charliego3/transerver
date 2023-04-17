@@ -42,11 +42,11 @@
             </label>
             <input id="email" type="text" name="email" placeholder="filter menu items..."
                    class="h-[32px] mb-2 bg-gray-500/30 dark:bg-gray-500/20 rounded-md px-2 pl-[34px]
-                   text-black dark:text-white border-gray-600
+                   text-black dark:text-white {data.menus ? 'border-gray-600' : 'border-red-500'}
                    focus:placeholder-gray-500/60 placeholder-gray-500"/>
         </div>
 
-        <div class="overflow-scroll h-full p-2">
+        <div class="overflow-auto h-full p-2">
             {#each data.menus as menu}
                 <MenuItem data={menu} {selected}/>
             {/each}
