@@ -40,7 +40,8 @@
     <div class="rounded-md select-none h-[38px] px-3 cursor-pointer flex
                  items-center transition duration-100 gap-[8px] justify-between
                  {isSelected ? 'bg-skin-accent shadow-lg drop-shadow-lg text-white' :
-                 'hover:bg-gray-800/10 dark:hover:bg-gray-800/60 hover:font-bold'}" on:click={toggleChildren}>
+                 'hover:bg-gray-800/10 dark:hover:bg-gray-800/60 hover:font-bold'}"
+         on:click={toggleChildren} on:keydown={() => {}}>
         <div class="flex gap-[8px] w-full items-center h-full">
             <img alt={data.name} class="w-[20px] h-[20px]" src={data.icon}/>
             {data.name}

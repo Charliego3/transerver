@@ -2,9 +2,9 @@ go 1.20
 
 use (
 	./accounts
+	./app
 	./cli
 	./gateway
-	./pkg
 	./pkg1
 	./protos
 	./utils
