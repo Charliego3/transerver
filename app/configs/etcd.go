@@ -30,12 +30,12 @@ func init() {
 		return
 	}
 
-	RegisterFetcher[EtcdConfig](&defaultEtcdFetcher{})
+	RegisterCachedFetcher[EtcdConfig](&defaultEtcdFetcher{})
 }
 
 type defaultEtcdFetcher struct{}
 
-func (f *defaultEtcdFetcher) FetchConfig() (EtcdConfig, bool) {
+func (f *defaultEtcdFetcher) Fetch() (EtcdConfig, bool) {
 	return EtcdConfig{
 		Endpoints: []string{"0.0.0.0:2379"},
 	}, true

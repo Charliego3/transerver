@@ -1,9 +1,30 @@
 package configs
 
-import "reflect"
+import (
+	"reflect"
+	"sync"
+)
 
 type Fetcher[T any] interface {
-	FetchConfig() (T, bool)
+	Fetch() (T, bool)
+}
+
+type CachedFetcher[T any] struct {
+	fetcher Fetcher[T]
+	payload T
+	once    sync.Once
+}
+
+func RegisterCachedFetcher[T any](fetcher Fetcher[T]) {
+	RegisterFetcher[T](&CachedFetcher[T]{fetcher: fetcher})
+}
+
+func (f *CachedFetcher[T]) Fetch() (T, bool) {
+	success := true
+	f.once.Do(func() {
+		f.payload, success = f.fetcher.Fetch()
+	})
+	return f.payload, success
 }
 
 var fetchers = make(map[string]any)
@@ -32,7 +53,7 @@ func getFetcher[T any]() (Fetcher[T], bool) {
 func getConfig[T any]() (T, bool) {
 	if f, ok := getFetcher[T](); ok {
 		if fetcher, ok := (any)(f).(Fetcher[T]); ok {
-			return fetcher.FetchConfig()
+			return fetcher.Fetch()
 		}
 	}
 	var t T
