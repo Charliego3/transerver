@@ -28,6 +28,10 @@ var (
 	loggerOnce    sync.Once
 )
 
+func SetLogger(logger Logger) {
+	defaultLogger = logger
+}
+
 func With(keyvals ...any) Logger {
 	return defaultFactory.With(keyvals...)
 }
@@ -36,15 +40,7 @@ func WithPrefix(prefix string) Logger {
 	return defaultFactory.WithPrefix(prefix)
 }
 
-func SetFactory(factory Factory) {
-	defaultFactory = factory
-}
-
-func SetLogger(logger Logger) {
-	defaultLogger = logger
-}
-
-func getLogger() Logger {
+func Default() Logger {
 	loggerOnce.Do(func() {
 		defaultLogger = defaultFactory.Default()
 	})
@@ -52,31 +48,31 @@ func getLogger() Logger {
 }
 
 func Debug(msg interface{}, keyvals ...interface{}) {
-	getLogger().Debug(msg, keyvals...)
+	Default().Debug(msg, keyvals...)
 }
 
 func Info(msg interface{}, keyvals ...interface{}) {
-	getLogger().Info(msg, keyvals...)
+	Default().Info(msg, keyvals...)
 }
 
 func Warn(msg interface{}, keyvals ...interface{}) {
-	getLogger().Warn(msg, keyvals...)
+	Default().Warn(msg, keyvals...)
 }
 
 func Error(msg interface{}, keyvals ...interface{}) {
-	getLogger().Error(msg, keyvals...)
+	Default().Error(msg, keyvals...)
 }
 
 func Fatal(msg interface{}, keyvals ...interface{}) {
-	getLogger().Fatal(msg, keyvals...)
+	Default().Fatal(msg, keyvals...)
 }
 
 func Print(msg interface{}, keyvals ...interface{}) {
-	getLogger().Print(msg, keyvals...)
+	Default().Print(msg, keyvals...)
 }
 
 func Debugf(format string, args ...interface{}) {
-	logger := getLogger()
+	logger := Default()
 	if l, ok := logger.(interface {
 		Debugf(string, ...any)
 	}); ok {
@@ -87,7 +83,7 @@ func Debugf(format string, args ...interface{}) {
 }
 
 func Infof(format string, args ...interface{}) {
-	logger := getLogger()
+	logger := Default()
 	if l, ok := logger.(interface {
 		Infof(string, ...any)
 	}); ok {
@@ -98,7 +94,7 @@ func Infof(format string, args ...interface{}) {
 }
 
 func Warnf(format string, args ...interface{}) {
-	logger := getLogger()
+	logger := Default()
 	if l, ok := logger.(interface {
 		Warnf(string, ...any)
 	}); ok {
@@ -109,7 +105,7 @@ func Warnf(format string, args ...interface{}) {
 }
 
 func Errorf(format string, args ...interface{}) {
-	logger := getLogger()
+	logger := Default()
 	if l, ok := logger.(interface {
 		Errorf(string, ...any)
 	}); ok {
@@ -120,7 +116,7 @@ func Errorf(format string, args ...interface{}) {
 }
 
 func Fatalf(format string, args ...interface{}) {
-	logger := getLogger()
+	logger := Default()
 	if l, ok := logger.(interface {
 		Fatalf(string, ...any)
 	}); ok {
@@ -131,7 +127,7 @@ func Fatalf(format string, args ...interface{}) {
 }
 
 func Printf(format string, args ...interface{}) {
-	logger := getLogger()
+	logger := Default()
 	if l, ok := logger.(interface {
 		Printf(string, ...any)
 	}); ok {

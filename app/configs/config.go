@@ -50,12 +50,11 @@ func getFetcher[T any]() (Fetcher[T], bool) {
 	return nil, false
 }
 
-func getConfig[T any]() (T, bool) {
+func getConfig[T any]() (t T, ok bool) {
 	if f, ok := getFetcher[T](); ok {
 		if fetcher, ok := (any)(f).(Fetcher[T]); ok {
 			return fetcher.Fetch()
 		}
 	}
-	var t T
 	return t, false
 }

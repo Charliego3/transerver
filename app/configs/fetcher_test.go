@@ -5,8 +5,8 @@ import (
 )
 
 func TestFetcherTypes(t *testing.T) {
-	config, ok := Fetch[EtcdConfig]()
+	config, ok := Fetch[Etcd]()
 	t.Log(config, ok)
-	config, ok = Fetch[EtcdConfig]()
+	config, ok = Fetch[Etcd]()
 	t.Log(config, ok)
 }

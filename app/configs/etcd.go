@@ -1,11 +1,10 @@
 package configs
 
 import (
-	"github.com/transerver/app/logger"
 	"time"
 )
 
-type EtcdConfig struct {
+type Etcd struct {
 	Endpoints            []string      `json:"endpoints,omitempty" yaml:"endpoints,omitempty"`
 	AutoSyncInterval     time.Duration `json:"autoSyncInterval,omitempty" yaml:"autoSyncInterval,omitempty"`
 	DialTimeout          time.Duration `json:"dialTimeout,omitempty" yaml:"dialTimeout,omitempty"`
@@ -24,19 +23,8 @@ type EtcdConfig struct {
 	PemCert string `json:"pemCert,omitempty" yaml:"pemCert,omitempty"`
 }
 
-func init() {
-	logger.Info(disableDefault)
-	if disableDefault {
-		return
-	}
+type embeddedEtcdFetcher struct{}
 
-	RegisterCachedFetcher[EtcdConfig](&defaultEtcdFetcher{})
-}
-
-type defaultEtcdFetcher struct{}
-
-func (f *defaultEtcdFetcher) Fetch() (EtcdConfig, bool) {
-	return EtcdConfig{
-		Endpoints: []string{"0.0.0.0:2379"},
-	}, true
+func (f *embeddedEtcdFetcher) Fetch() (Etcd, bool) {
+	return *instance.Etcd, true
 }
