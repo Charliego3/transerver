@@ -8,4 +8,5 @@ use (
 	./pkg1
 	./protos
 	./utils
+	./commons
 )

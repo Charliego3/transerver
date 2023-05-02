@@ -2,8 +2,9 @@ package utils
 
 import (
 	"database/sql"
-	"github.com/gookit/goutil/strutil"
 	"unsafe"
+
+	"github.com/gookit/goutil/strutil"
 )
 
 func String(data []byte) string {
@@ -35,7 +36,7 @@ func AnyBlank(args ...string) bool {
 	return false
 }
 
-// NonBlanks 有任何一个字符串为空时返回false, 否则返回true
+// NonBlanks has any empty string returns false otherwise return true
 func NonBlanks(args ...string) bool {
 	for _, v := range args {
 		if strutil.IsBlank(v) {
