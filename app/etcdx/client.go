@@ -3,14 +3,14 @@ package es
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/charmbracelet/log"
-	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/pkg1/configs"
-	"github.com/transerver/pkg1/logger"
-	"github.com/transerver/utils"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/gookit/goutil/strutil"
+	"github.com/transerver/app/configs"
+	"github.com/transerver/app/logger"
+	"github.com/transerver/utils"
 
 	ev3 "go.etcd.io/etcd/client/v3"
 )
@@ -19,8 +19,10 @@ type Client struct {
 	*ev3.Client
 }
 
+// New returns etcd client from options
 func New(opts ...Option) (*Client, error) {
-	cfg := &ev3.Config{Logger: logger.Standard()}
+	// TODO: etcd config logger
+	cfg := &ev3.Config{}
 	for _, opt := range opts {
 		opt(cfg)
 	}
@@ -41,23 +43,28 @@ var (
 	o sync.Once
 )
 
+// C returns etcd client from config
 func C() *Client {
 	o.Do(func() {
-		e := configs.Bootstrap.Root().Etcd
+		cfg, err := configs.Fetch[configs.Etcd]()
+		if err != nil {
+			logger.Fatal("can't find etcd config", "err", err)
+		}
+
 		var tlsConfig *tls.Config
-		if strutil.IsNotBlank(e.RootCA) {
-			if utils.AnyBlank(e.PemKey, e.PemCert) {
-				logger.Sugar().Fatalf("the certificate path is incorrect, Key: %q, Cert: %q", e.PemKey, e.PemCert)
+		if strutil.IsNotBlank(cfg.RootCA) {
+			if utils.AnyBlank(cfg.PemKey, cfg.PemCert) {
+				logger.Fatalf("the certificate path is incorrect, Key: %q, Cert: %q", cfg.PemKey, cfg.PemCert)
 			}
 
-			etcdCA, err := os.ReadFile(e.RootCA)
+			etcdCA, err := os.ReadFile(cfg.RootCA)
 			if err != nil {
-				logger.Sugar().Fatal(err)
+				logger.Fatal("read etcd RootCA fail", "err", err)
 			}
 
-			pair, err := tls.LoadX509KeyPair(e.PemCert, e.PemKey)
+			pair, err := tls.LoadX509KeyPair(cfg.PemCert, cfg.PemKey)
 			if err != nil {
-				logger.Sugar().Fatal(err)
+				logger.Fatal("load etcd CA cert and key fail", "err", err)
 			}
 
 			rootCertPool := x509.NewCertPool()
@@ -69,20 +76,18 @@ func C() *Client {
 			}
 		}
 
-		log.StandardLog()
-
 		opts := []Option{
-			WithEndpoints(e.Endpoints...),
-			WithAutoSyncInterval(e.AutoSyncInterval),
-			WithDialTimeout(e.DialTimeout),
-			WithDialKeepAliveTime(e.DialKeepAliveTime),
-			WithDialKeepAliveTimeout(e.DialKeepAliveTimeout),
-			WithMaxCallSendSize(e.MaxCallSendSize),
-			WithMaxCallRecvSize(e.MaxCallRecvSize),
-			WithUsername(e.Username),
-			WithPassword(e.Password),
-			WithPermWithoutStream(e.PermWithoutStream),
-			WithRejectOldCluster(e.RejectOldCluster),
+			WithEndpoints(cfg.Endpoints...),
+			WithAutoSyncInterval(cfg.AutoSyncInterval),
+			WithDialTimeout(cfg.DialTimeout),
+			WithDialKeepAliveTime(cfg.DialKeepAliveTime),
+			WithDialKeepAliveTimeout(cfg.DialKeepAliveTimeout),
+			WithMaxCallSendSize(cfg.MaxCallSendSize),
+			WithMaxCallRecvSize(cfg.MaxCallRecvSize),
+			WithUsername(cfg.Username),
+			WithPassword(cfg.Password),
+			WithPermWithoutStream(cfg.PermWithoutStream),
+			WithRejectOldCluster(cfg.RejectOldCluster),
 		}
 
 		if tlsConfig != nil {
@@ -91,11 +96,11 @@ func C() *Client {
 
 		client, err := New(opts...)
 		if err != nil {
-			logger.Sugar().Fatal("connect etcd server fail", err)
+			logger.Fatal("connect etcd server fail", "err", err)
 		}
 
 		c = client
-		logger.Sugar().Infof("connect etcd: %s", c.Endpoints())
+		logger.Infof("connect etcd: %s", c.Endpoints())
 	})
 	return c
 }

@@ -25,6 +25,6 @@ type Etcd struct {
 
 type embeddedEtcdFetcher struct{}
 
-func (f *embeddedEtcdFetcher) Fetch() (Etcd, bool) {
-	return *instance.Etcd, true
+func (f *embeddedEtcdFetcher) Fetch() (Etcd, error) {
+	return *instance.Etcd, nil
 }

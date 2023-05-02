@@ -1,12 +1,13 @@
 package configs
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 )
 
 type Fetcher[T any] interface {
-	Fetch() (T, bool)
+	Fetch() (T, error)
 }
 
 type CachedFetcher[T any] struct {
@@ -19,12 +20,12 @@ func RegisterCachedFetcher[T any](fetcher Fetcher[T]) {
 	RegisterFetcher[T](&CachedFetcher[T]{fetcher: fetcher})
 }
 
-func (f *CachedFetcher[T]) Fetch() (T, bool) {
-	success := true
+func (f *CachedFetcher[T]) Fetch() (T, error) {
+	var err error
 	f.once.Do(func() {
-		f.payload, success = f.fetcher.Fetch()
+		f.payload, err = f.fetcher.Fetch()
 	})
-	return f.payload, success
+	return f.payload, err
 }
 
 var fetchers = make(map[string]any)
@@ -34,8 +35,13 @@ func RegisterFetcher[T any](fetcher Fetcher[T]) {
 	fetchers[reflect.TypeOf(t).String()] = fetcher
 }
 
-func Fetch[T any]() (T, bool) {
+func Fetch[T any]() (T, error) {
 	return getConfig[T]()
+}
+
+func Must[T any]() T {
+	ins, _ := Fetch[T]()
+	return ins
 }
 
 func getFetcher[T any]() (Fetcher[T], bool) {
@@ -50,11 +56,11 @@ func getFetcher[T any]() (Fetcher[T], bool) {
 	return nil, false
 }
 
-func getConfig[T any]() (t T, ok bool) {
+func getConfig[T any]() (t T, ok error) {
 	if f, ok := getFetcher[T](); ok {
 		if fetcher, ok := (any)(f).(Fetcher[T]); ok {
 			return fetcher.Fetch()
 		}
 	}
-	return t, false
+	return t, fmt.Errorf("config not found: %s", reflect.TypeOf(t).String())
 }

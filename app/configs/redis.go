@@ -48,6 +48,6 @@ type Redis struct {
 
 type embeddedRedisFetcher struct{}
 
-func (f *embeddedRedisFetcher) Fetch() (Redis, bool) {
-	return *instance.Redis, true
+func (f *embeddedRedisFetcher) Fetch() (Redis, error) {
+	return *instance.Redis, nil
 }

@@ -14,6 +14,6 @@ type Database struct {
 
 type embeddedDatabaseFetcher struct{}
 
-func (f *embeddedDatabaseFetcher) Fetch() (Database, bool) {
-	return *instance.Database, true
+func (f *embeddedDatabaseFetcher) Fetch() (Database, error) {
+	return *instance.Database, nil
 }
