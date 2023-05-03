@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/Charliego93/go-i18n/v2 v2.1.3
-	github.com/gookit/goutil v0.5.12
+	github.com/gookit/goutil v0.6.8
 	github.com/json-iterator/go v1.1.12
 	golang.org/x/text v0.9.0
 	google.golang.org/grpc v1.54.0

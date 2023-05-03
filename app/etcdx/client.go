@@ -1,4 +1,4 @@
-package es
+package etcdx
 
 import (
 	"crypto/tls"
@@ -48,7 +48,7 @@ func C() *Client {
 	o.Do(func() {
 		cfg, err := configs.Fetch[configs.Etcd]()
 		if err != nil {
-			logger.Fatal("can't find etcd config", "err", err)
+			logger.Fatal("not resolved etcd config", "err", err)
 		}
 
 		var tlsConfig *tls.Config

@@ -7,7 +7,7 @@ require (
 	github.com/Charliego93/go-i18n/v2 v2.1.3
 	github.com/charliego93/flagx v0.0.8
 	github.com/go-redis/redis/v9 v9.0.0-beta.2
-	github.com/gookit/goutil v0.5.12
+	github.com/gookit/goutil v0.6.8
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0

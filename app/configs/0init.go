@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/charliego93/argsx"
 	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/transerver/app/logger"
@@ -22,7 +23,7 @@ var (
 )
 
 func init() {
-	configPath := "./config.yaml"
+	configPath := argsx.Fetch("config").MustString()
 	disabled = !fsutil.FileExist(configPath)
 	if disabled {
 		return

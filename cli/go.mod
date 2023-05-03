@@ -6,7 +6,7 @@ require (
 	github.com/charmbracelet/bubbles v0.14.0
 	github.com/charmbracelet/bubbletea v0.22.1
 	github.com/charmbracelet/lipgloss v0.7.1
-	github.com/gookit/goutil v0.5.12
+	github.com/gookit/goutil v0.6.8
 )
 
 require (

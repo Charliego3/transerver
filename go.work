@@ -4,9 +4,9 @@ use (
 	./accounts
 	./app
 	./cli
+	./commons
 	./gateway
 	./pkg1
 	./protos
 	./utils
-	./commons
 )
