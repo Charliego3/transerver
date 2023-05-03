@@ -9,7 +9,6 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/strutil"
 	"github.com/transerver/app/configs"
-	"github.com/transerver/app/logger"
 	"github.com/transerver/utils"
 )
 
@@ -46,12 +45,11 @@ func (f *Etcd) Fetch() (configs.Etcd, error) {
 	cfg.DialKeepAliveTimeout = argsx.New(f.getByPrefix("DialKeepAliveTimeout")).MustDuration()
 	cfg.MaxCallSendSize = argsx.New(f.getByPrefix("MaxCallSendSize")).MustInt()
 	cfg.MaxCallRecvSize = argsx.New(f.getByPrefix("MaxCallRecvSize")).MustInt()
-	cfg.PermWithoutStream = argsx.New(f.getByPrefix("PermWithoutStream")).MustBool()
-	cfg.RejectOldCluster = argsx.New(f.getByPrefix("RejectOldCluster")).MustBool()
+	cfg.PermWithoutStream = argsx.New(f.getByPrefix("PermWithoutStream")).MustBool(false)
+	cfg.RejectOldCluster = argsx.New(f.getByPrefix("RejectOldCluster")).MustBool(false)
 	return cfg, nil
 }
 
 func init() {
 	configs.RegisterCachedFetcher[configs.Etcd](&Etcd{})
-	logger.Info("etcd init fetcher...")
 }

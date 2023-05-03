@@ -1,8 +1,10 @@
 package etcdx
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"os"
 	"sync"
 	"time"
@@ -100,7 +102,23 @@ func C() *Client {
 		}
 
 		c = client
-		logger.Infof("connect etcd: %s", c.Endpoints())
+		logger.Info("connect etcd", "endpoints", c.Endpoints())
 	})
 	return c
+}
+
+// Fetch returns response, default timeout is 30s
+func Fetch(key string, opts ...OpOpt) (*ev3.GetResponse, error) {
+	f := getFOpts(opts)
+	ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
+	defer cancel()
+	resp, err := C().Get(ctx, key, f.opOpts...)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Count == 0 {
+		return nil, fmt.Errorf("there is no value for key: %s", key)
+	}
+	return resp, nil
 }

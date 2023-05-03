@@ -9,7 +9,8 @@
             "type": "go",
             "request": "launch",
             "mode": "auto",
-            "program": "./commons"
+            "program": "./commons",
+            "env": {"ETCD_Endpoints": ":2379"}
         }
     ]
 }

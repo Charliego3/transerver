@@ -4,6 +4,8 @@ import (
 	"github.com/transerver/app/logger"
 )
 
+var Name string
+
 type Application struct {
 	servers []Server
 }
