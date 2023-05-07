@@ -3,6 +3,9 @@ package logger
 import (
 	"fmt"
 	"sync"
+	"time"
+
+	"github.com/charmbracelet/log"
 )
 
 type Logger interface {
@@ -12,6 +15,9 @@ type Logger interface {
 	Error(msg interface{}, keyvals ...interface{})
 	Fatal(msg interface{}, keyvals ...interface{})
 	Print(msg interface{}, keyvals ...interface{})
+	GetLevel() Level
+	SetLevel(Level)
+	SetTimeFormat(string)
 }
 
 type Loggerf interface {
@@ -22,6 +28,16 @@ type Loggerf interface {
 	Fatalf(format string, args ...interface{})
 	Printf(format string, args ...interface{})
 }
+
+type Level = log.Level
+
+var (
+	DebugLevel Level = log.DebugLevel
+	InfoLevel  Level = log.InfoLevel
+	WarnLevel  Level = log.WarnLevel
+	ErrorLevel Level = log.ErrorLevel
+	FatalLevel Level = log.FatalLevel
+)
 
 var (
 	defaultLogger Logger
@@ -43,8 +59,21 @@ func WithPrefix(prefix string) Logger {
 func Default() Logger {
 	loggerOnce.Do(func() {
 		defaultLogger = defaultFactory.Default()
+		defaultLogger.SetTimeFormat(time.DateTime)
 	})
 	return defaultLogger
+}
+
+func GetLevel() Level {
+	return Default().GetLevel()
+}
+
+func SetLevel(l Level) {
+	Default().SetLevel(l)
+}
+
+func SetTimeFormatter(format string) {
+	Default().SetTimeFormat(format)
 }
 
 func Debug(msg interface{}, keyvals ...interface{}) {

@@ -13,6 +13,8 @@ import (
 	"github.com/transerver/app/configs"
 	"github.com/transerver/app/logger"
 	"github.com/transerver/utils"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	ev3 "go.etcd.io/etcd/client/v3"
 )
@@ -23,8 +25,30 @@ type Client struct {
 
 // New returns etcd client from options
 func New(opts ...Option) (*Client, error) {
-	// TODO: etcd config logger
-	cfg := &ev3.Config{}
+	var config zap.Config
+	if logger.GetLevel() == logger.DebugLevel {
+		config = zap.NewDevelopmentConfig()
+		config.EncoderConfig.ConsoleSeparator = " "
+	} else {
+		config = zap.NewProductionConfig()
+	}
+
+	config.EncoderConfig.EncodeTime = func(t time.Time, pae zapcore.PrimitiveArrayEncoder) {
+		pae.AppendString(t.Format(time.DateTime))
+	}
+	config.EncoderConfig.EncodeLevel = func(l zapcore.Level, pae zapcore.PrimitiveArrayEncoder) {
+		sl := l.CapitalString()
+		if len(sl) > 4 {
+			sl = sl[:4]
+		}
+		pae.AppendString(sl)
+	}
+	log, err := config.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	cfg := &ev3.Config{Logger: log}
 	for _, opt := range opts {
 		opt(cfg)
 	}
@@ -102,7 +126,7 @@ func C() *Client {
 		}
 
 		c = client
-		logger.Info("connect etcd", "endpoints", c.Endpoints())
+		logger.Info("connected etcd", "endpoints", c.Endpoints())
 	})
 	return c
 }
