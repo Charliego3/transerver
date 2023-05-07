@@ -3,7 +3,7 @@ module github.com/transerver/commons
 go 1.20
 
 require (
-	github.com/charliego93/argsx v0.0.2
+	github.com/charliego93/argsx v1.0.3
 	github.com/goccy/go-json v0.10.2
 	github.com/gookit/goutil v0.6.8
 )

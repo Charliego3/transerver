@@ -1,7 +1,6 @@
 package fetchers
 
 import (
-	"errors"
 	"os"
 	"strings"
 
@@ -20,33 +19,26 @@ func (f *Etcd) getByPrefix(key string) string {
 
 func (f *Etcd) Fetch() (configs.Etcd, error) {
 	cfgJson := f.getByPrefix("JSON_CONFIG")
-	if strutil.IsNotBlank(cfgJson) && cfgJson[0] == '{' {
-		var config configs.Etcd
-		err := json.Unmarshal(utils.Bytes(cfgJson), &config)
-		return config, err
-	}
-
-	endpoints := f.getByPrefix("Endpoints")
-	if strutil.IsBlank(endpoints) {
-		return configs.Etcd{}, errors.New("can not find etcd config from environment")
-	}
-
 	var cfg configs.Etcd
-	cfg.Endpoints = strings.Split(endpoints, ",")
+	if strutil.IsNotBlank(cfgJson) && cfgJson[0] == '{' {
+		err := json.Unmarshal(utils.Bytes(cfgJson), &cfg)
+		return cfg, err
+	}
+
+	cfg.Endpoints = strings.Split(f.getByPrefix("Endpoints"), ",")
 	cfg.Username = f.getByPrefix("Username")
 	cfg.Password = f.getByPrefix("Password")
 	cfg.RootCA = f.getByPrefix("RootCA")
 	cfg.PemCert = f.getByPrefix("PemCert")
 	cfg.PemKey = f.getByPrefix("PemKey")
-
-	cfg.AutoSyncInterval = argsx.New(f.getByPrefix("AutoSyncInterval")).MustDuration()
-	cfg.DialTimeout = argsx.New(f.getByPrefix("DialTimeout")).MustDuration()
-	cfg.DialKeepAliveTime = argsx.New(f.getByPrefix("DialKeepAliveTime")).MustDuration()
-	cfg.DialKeepAliveTimeout = argsx.New(f.getByPrefix("DialKeepAliveTimeout")).MustDuration()
-	cfg.MaxCallSendSize = argsx.New(f.getByPrefix("MaxCallSendSize")).MustInt()
-	cfg.MaxCallRecvSize = argsx.New(f.getByPrefix("MaxCallRecvSize")).MustInt()
-	cfg.PermWithoutStream = argsx.New(f.getByPrefix("PermWithoutStream")).MustBool(false)
-	cfg.RejectOldCluster = argsx.New(f.getByPrefix("RejectOldCluster")).MustBool(false)
+	cfg.AutoSyncInterval = argsx.NewV(f.getByPrefix("AutoSyncInterval")).MustDuration()
+	cfg.DialTimeout = argsx.NewV(f.getByPrefix("DialTimeout")).MustDuration()
+	cfg.DialKeepAliveTime = argsx.NewV(f.getByPrefix("DialKeepAliveTime")).MustDuration()
+	cfg.DialKeepAliveTimeout = argsx.NewV(f.getByPrefix("DialKeepAliveTimeout")).MustDuration()
+	cfg.MaxCallSendSize = argsx.NewV(f.getByPrefix("MaxCallSendSize")).MustInt()
+	cfg.MaxCallRecvSize = argsx.NewV(f.getByPrefix("MaxCallRecvSize")).MustInt()
+	cfg.PermWithoutStream = argsx.NewV(f.getByPrefix("PermWithoutStream")).MustBool(false)
+	cfg.RejectOldCluster = argsx.NewV(f.getByPrefix("RejectOldCluster")).MustBool(false)
 	return cfg, nil
 }
 
