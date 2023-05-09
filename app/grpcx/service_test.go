@@ -2,6 +2,8 @@ package grpcx
 
 import (
 	"context"
+	"testing"
+
 	"github.com/charmbracelet/log"
 	"github.com/stretchr/testify/require"
 	"github.com/transerver/protos/acctspb"
@@ -9,7 +11,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/status"
-	"testing"
 )
 
 type AccountService struct {
@@ -40,7 +41,9 @@ func (g *AccountService) Login(
 }
 
 func TestService(t *testing.T) {
-	err := NewGrpcServer().RegisterService(NewAccountService()).ListenAndServe("tcp", "0.0.0.0:8081")
+	app := NewServer()
+	app.RegisterService(NewAccountService())
+	err := app.ListenAndServe("tcp", "0.0.0.0:8081")
 	require.NoError(t, err)
 }
 
