@@ -2,7 +2,6 @@ package grpcx
 
 import (
 	"net"
-	"net/http"
 
 	"github.com/transerver/app/logger"
 	"github.com/transerver/app/opts"
@@ -11,52 +10,42 @@ import (
 )
 
 type Server struct {
-	addr    string
-	server  *grpc.Server
-	srvOpts []grpc.ServerOption
+	listener net.Listener
+	server   *grpc.Server
+	srvOpts  []grpc.ServerOption
 }
 
+// NewServer returns grpc server instance
 func NewServer(opts ...opts.Option[Server]) *Server {
 	srv := &Server{}
-	srv.getOpts(opts...)
+	srv.init(opts...)
 	return srv
 }
 
-func (g *Server) getOpts(opts ...opts.Option[Server]) {
+// init initialize server properties
+func (g *Server) init(opts ...opts.Option[Server]) {
 	for _, opt := range opts {
 		opt.Apply(g)
 	}
 
+	if g.listener == nil {
+		logger.Fatal("grpc server has no address specified, use WithAddr or WithListener to specify")
+	}
 	g.server = grpc.NewServer(g.srvOpts...)
 }
 
+// Address returns grpc listener addr
+func (g *Server) Address() net.Addr {
+	return g.listener.Addr()
+}
+
+// RegisterService register server to grpc servser
 func (g *Server) RegisterService(services ...service.Service) {
 	for _, srv := range services {
 		g.server.RegisterService(srv.ServiceDesc(), srv)
 	}
 }
 
-func (g *Server) ListenAndServe(network, addr string) error {
-	lis, err := net.Listen(network, addr)
-	if err != nil {
-		return err
-	}
-	return g.Serve(lis)
-}
-
-func (g *Server) Serve(lis net.Listener) error {
-	logger.Info("Grpc.Server on", "address", lis.Addr().String())
-	return g.server.Serve(lis)
-}
-
-func (g *Server) GracefulShutdown() {
-
-}
-
-func (g *Server) Shutdown() error {
+func (g *Server) Run() error {
 	return nil
-}
-
-func (g *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	g.server.ServeHTTP(w, r)
 }

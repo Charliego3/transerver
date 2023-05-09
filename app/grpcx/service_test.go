@@ -41,9 +41,9 @@ func (g *AccountService) Login(
 }
 
 func TestService(t *testing.T) {
-	app := NewServer()
+	app := NewServer(WithAddr("tcp", "0.0.0.0:8081"))
 	app.RegisterService(NewAccountService())
-	err := app.ListenAndServe("tcp", "0.0.0.0:8081")
+	err := app.Run()
 	require.NoError(t, err)
 }
 

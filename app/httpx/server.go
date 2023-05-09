@@ -5,16 +5,41 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/transerver/app/logger"
+	"github.com/transerver/app/opts"
 	"github.com/transerver/app/service"
 )
 
 type Server struct {
 	*mux.Router
+
+	// this listener will be served
+	listener net.Listener
+
+	// http server middleware
+	middlewares []Middleware
 }
 
-func NewServer() *Server {
-	return &Server{
+type Middleware = mux.MiddlewareFunc
+
+func NewServer(opts ...opts.Option[Server]) *Server {
+	h := &Server{
 		Router: mux.NewRouter(),
+	}
+
+	h.init(opts)
+	h.Use(h.middlewares...)
+	return h
+}
+
+// init accept options to Server
+func (h *Server) init(opts []opts.Option[Server]) {
+	for _, opt := range opts {
+		opt.Apply(h)
+	}
+
+	if h.listener == nil {
+		logger.Fatal("http server has no address specified, use WithAddr or WithListener to specify")
 	}
 }
 
@@ -24,22 +49,6 @@ func (h *Server) RegisterService(service ...service.Service) {
 	})
 }
 
-func (h *Server) ListenAndServe(network, addr string) error {
+func (h *Server) Run() error {
 	return nil
-}
-
-func (h *Server) Serve(lis net.Listener) error {
-	return nil
-}
-
-func (h *Server) GracefulShutdown() {
-
-}
-
-func (h *Server) Shutdown() error {
-	return nil
-}
-
-func (h *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
 }

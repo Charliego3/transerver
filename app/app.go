@@ -25,7 +25,7 @@ type Application struct {
 
 	// listener to accept http and grpc
 	// if cfg.glis and cfg.hlis both nil else is nil
-	lis cmux.CMux
+	listener cmux.CMux
 
 	// Application config properties
 	cfg *Config
@@ -50,31 +50,40 @@ func (app *Application) init(opts ...opts.Option[Config]) {
 			app.cfg.lis = app.dynamicListener("Application")
 		}
 
-		app.lis = cmux.New(app.cfg.lis)
+		app.listener = cmux.New(app.cfg.lis)
 		contentType := http.CanonicalHeaderKey("content-type")
 		matcher := cmux.HTTP2MatchHeaderFieldPrefixSendSettings(contentType, "application/grpc")
-		app.cfg.glis = app.lis.MatchWithWriters(matcher)
-		app.cfg.hlis = app.lis.Match(cmux.Any())
+		app.cfg.glis = app.listener.MatchWithWriters(matcher)
+		app.cfg.hlis = app.listener.Match(cmux.Any())
 	} else if app.cfg.glis == nil {
 		app.cfg.glis = app.dynamicListener("Grpc")
 	} else if app.cfg.hlis == nil {
 		app.cfg.hlis = app.dynamicListener("Http")
 	}
 
-	app.http = httpx.NewServer()
-	app.grpc = grpcx.NewServer()
+	app.http = httpx.NewServer(httpx.WithListener(app.cfg.hlis))
+	app.grpc = grpcx.NewServer(grpcx.WithListener(app.cfg.glis))
 }
 
 // dynamicListener if app without any listener specifies then create a dynamic listener
 func (app *Application) dynamicListener(server string) net.Listener {
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
-		logger.Fatal("listen fail", "server", server, "err", err)
+		logger.Fatal("failed to listen", "server", server, "err", err)
 	}
 
-	logger.Warn("You don't have specifies address then listen to dynamic",
+	logger.Warn("No address is specified so dynamic addresses are used",
 		"server", server, "address", app.cfg.lis.Addr().String())
 	return listener
+}
+
+// Address returns application listen address
+// this address is http and grpc both
+func (app *Application) Address() net.Addr {
+	if app.cfg.lis == nil {
+		return nil
+	}
+	return app.cfg.lis.Addr()
 }
 
 // RegisterService add service to http and grpc server
@@ -86,7 +95,7 @@ func (app *Application) RegisterService(services ...service.Service) {
 // Run start the server until terminate
 func (app *Application) Run() (err error) {
 	go func() {
-		herr := app.grpc.Serve(app.cfg.glis)
+		herr := app.grpc.Run()
 		if herr != nil {
 			if err == nil {
 				err = errors.Wrap(herr, "grpc server got an error")
@@ -96,15 +105,14 @@ func (app *Application) Run() (err error) {
 		}
 	}()
 	go func() {
-		err = app.http.Serve(app.cfg.hlis)
+		err = app.http.Run()
 		if err != nil {
 			errors.Wrap(err, "http server got an error")
 		}
 	}()
 
-	if app.lis != nil {
-		err = app.lis.Serve()
-
+	if app.listener != nil {
+		err = app.listener.Serve()
 	}
 	return nil
 }

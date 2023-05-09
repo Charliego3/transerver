@@ -25,7 +25,7 @@ func WithAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)
 		if err != nil {
-			logger.Fatal("app listen fail", "err", err)
+			logger.Fatal("failed to listen app", "err", err)
 		}
 		cfg.lis = listener
 	})
@@ -43,7 +43,7 @@ func WithHttpAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)
 		if err != nil {
-			logger.Fatal("http server listen fail", "err", err)
+			logger.Fatal("failed to listen http server with app", "err", err)
 		}
 		cfg.hlis = listener
 	})
@@ -61,7 +61,7 @@ func WithGrpcAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)
 		if err != nil {
-			logger.Fatal("grpc server listen fail", "err", err)
+			logger.Fatal("failed to listen grpc server with app", "err", err)
 		}
 		cfg.glis = listener
 	})

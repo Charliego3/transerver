@@ -8,6 +8,8 @@ require (
 	github.com/goccy/go-json v0.10.2
 	github.com/gookit/goutil v0.6.8
 	github.com/gorilla/mux v1.8.0
+	github.com/pkg/errors v0.9.1
+	github.com/soheilhy/cmux v0.1.5
 	github.com/stretchr/testify v1.8.2
 	go.etcd.io/etcd/client/v3 v3.5.8
 	go.uber.org/zap v1.24.0
@@ -32,10 +34,8 @@ require (
 	github.com/muesli/reflow v0.3.0 // indirect
 	github.com/muesli/termenv v0.15.1 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/soheilhy/cmux v0.1.5 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.8 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.8 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
