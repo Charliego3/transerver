@@ -1,7 +1,7 @@
 package utils
 
 import (
-	json "github.com/json-iterator/go"
+	"github.com/goccy/go-json"
 	"net/http"
 )
 

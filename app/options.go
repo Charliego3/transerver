@@ -31,6 +31,11 @@ func WithAddr(network, addr string) opts.Option[Config] {
 	})
 }
 
+// WithTCPAddr is WithAddr alias but network using tcp
+func WithTCPAddr(addr string) opts.Option[Config] {
+	return WithAddr("tcp", addr)
+}
+
 // WithListener served http and grpc on same address
 func WithListener(lis net.Listener) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {

@@ -1,8 +1,16 @@
 package main
 
-import "github.com/transerver/app"
+import (
+	"github.com/transerver/app"
+	_ "github.com/transerver/commons/fetchers/env/etcd"
+	_ "github.com/transerver/commons/fetchers/etcd/database"
+	_ "github.com/transerver/commons/fetchers/etcd/redis"
+)
 
 func main() {
-	app := app.NewApp(app.WithAddr("tcp", ":8080"))
-	app.Run()
+	application := app.NewApp()
+	err := application.Run()
+	if err != nil {
+		panic(err)
+	}
 }

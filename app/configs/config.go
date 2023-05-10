@@ -28,11 +28,10 @@ func (f *CachedFetcher[T]) Fetch() (T, error) {
 	return f.payload, err
 }
 
-var fetchers = make(map[string]any)
+var fetchers = make([]any, 0)
 
 func RegisterFetcher[T any](fetcher Fetcher[T]) {
-	var t T
-	fetchers[reflect.TypeOf(t).String()] = fetcher
+	fetchers = append(fetchers, fetcher)
 }
 
 func Fetch[T any]() (T, error) {
@@ -50,8 +49,10 @@ func getFetcher[T any]() (Fetcher[T], bool) {
 		return nil, false
 	}
 
-	if f, ok := fetchers[reflect.TypeOf(t).String()]; ok {
-		return f.(Fetcher[T]), true
+	for _, fetcher := range fetchers {
+		if f, ok := fetcher.(Fetcher[T]); ok {
+			return f, true
+		}
 	}
 	return nil, false
 }

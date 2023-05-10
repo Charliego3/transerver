@@ -12,9 +12,10 @@ import (
 )
 
 type EmbeddedConfig struct {
-	Etcd     *Etcd     `json:"etcd" yaml:"etcd"`
-	Database *Database `json:"database" yaml:"database"`
-	Redis    *Redis    `json:"redis" yaml:"redis"`
+	App      *App      `json:"app,omitempty" yaml:"app,omitempty"`
+	Etcd     *Etcd     `json:"etcd,omitempty" yaml:"etcd,omitempty"`
+	Database *Database `json:"database,omitempty" yaml:"database,omitempty"`
+	Redis    *Redis    `json:"redis,omitempty" yaml:"redis,omitempty"`
 }
 
 var (
@@ -23,7 +24,7 @@ var (
 )
 
 func init() {
-	configPath := argsx.Fetch("config").MustString()
+	configPath := argsx.Fetch("config").MustString("./config.yaml")
 	disabled = !fsutil.FileExist(configPath)
 	if disabled {
 		return
@@ -42,10 +43,11 @@ func init() {
 	}
 
 	if err != nil {
-		logger.Fatal("load default config fail", "err", err)
+		logger.Fatal("failed to load default config from file", "file", configPath, "err", err)
 	}
 
 	register[Etcd](instance.Etcd, &embeddedEtcdFetcher{})
+	register[App](instance.App, &embeddedAppFetcher{})
 	register[Redis](instance.Redis, &embeddedRedisFetcher{})
 	register[Database](instance.Database, &embeddedDatabaseFetcher{})
 }

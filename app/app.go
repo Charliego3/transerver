@@ -1,8 +1,11 @@
 package app
 
 import (
+	"github.com/gookit/goutil/strutil"
+	"github.com/transerver/app/configs"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 	"github.com/soheilhy/cmux"
@@ -47,7 +50,12 @@ func (app *Application) init(opts ...opts.Option[Config]) {
 
 	if utils.Nils(app.cfg.glis, app.cfg.hlis) {
 		if app.cfg.lis == nil {
-			app.cfg.lis = app.dynamicListener("Application")
+			listener := app.getConfigedListener()
+			if listener == nil {
+				app.cfg.lis = app.dynamicListener("Application")
+			} else {
+				app.cfg.lis = listener
+			}
 		}
 
 		app.listener = cmux.New(app.cfg.lis)
@@ -65,6 +73,24 @@ func (app *Application) init(opts ...opts.Option[Config]) {
 	app.grpc = grpcx.NewServer(grpcx.WithListener(app.cfg.glis))
 }
 
+func (app *Application) getConfigedListener() net.Listener {
+	cfg, err := configs.Fetch[configs.App]()
+	if err == nil && strutil.IsNotBlank(cfg.Address) {
+		if strutil.IsBlank(cfg.Network) {
+			cfg.Network = "tcp"
+		}
+		if !strings.HasPrefix(cfg.Address, ":") {
+			cfg.Address = ":" + cfg.Address
+		}
+		listner, err := net.Listen(cfg.Network, cfg.Address)
+		if err != nil {
+			logger.Fatal("failed listen application", "network", cfg.Network, "address", cfg.Address)
+		}
+		return listner
+	}
+	return nil
+}
+
 // dynamicListener if app without any listener specifies then create a dynamic listener
 func (app *Application) dynamicListener(server string) net.Listener {
 	listener, err := net.Listen("tcp", ":0")
@@ -73,7 +99,7 @@ func (app *Application) dynamicListener(server string) net.Listener {
 	}
 
 	logger.Warn("No address is specified so dynamic addresses are used",
-		"server", server, "address", app.cfg.lis.Addr().String())
+		"server", server, "address", listener.Addr().String())
 	return listener
 }
 
@@ -107,7 +133,7 @@ func (app *Application) Run() (err error) {
 	go func() {
 		err = app.http.Run()
 		if err != nil {
-			errors.Wrap(err, "http server got an error")
+			err = errors.Wrap(err, "http server got an error")
 		}
 	}()
 
