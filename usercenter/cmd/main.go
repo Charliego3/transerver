@@ -8,7 +8,9 @@ import (
 )
 
 func main() {
-	application := app.NewApp()
+	application := app.NewApp(
+		app.WithAddr("tcp", ":9001"),
+	)
 	err := application.Run()
 	if err != nil {
 		panic(err)
