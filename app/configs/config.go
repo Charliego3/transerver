@@ -2,7 +2,6 @@ package configs
 
 import (
 	"fmt"
-	"reflect"
 	"sync"
 )
 
@@ -63,5 +62,5 @@ func getConfig[T any]() (t T, ok error) {
 			return fetcher.Fetch()
 		}
 	}
-	return t, fmt.Errorf("config not found: %s", reflect.TypeOf(t).String())
+	return t, fmt.Errorf("config not found: %T", t)
 }

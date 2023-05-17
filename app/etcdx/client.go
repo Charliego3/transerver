@@ -5,14 +5,15 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"github.com/pkg/errors"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/charliego93/logger"
 	"github.com/gookit/goutil/strutil"
 	"github.com/transerver/app/configs"
-	"github.com/transerver/app/logger"
-	"github.com/transerver/utils"
+	"github.com/transerver/app/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 
@@ -26,7 +27,7 @@ type Client struct {
 // New returns etcd client from options
 func New(opts ...Option) (*Client, error) {
 	var config zap.Config
-	if logger.GetLevel() == logger.DebugLevel {
+	if logger.GetLevel() == logger.LevelDebug {
 		config = zap.NewDevelopmentConfig()
 		config.EncoderConfig.ConsoleSeparator = " "
 	} else {
@@ -80,7 +81,7 @@ func C() *Client {
 		var tlsConfig *tls.Config
 		if strutil.IsNotBlank(cfg.RootCA) {
 			if utils.AnyBlank(cfg.PemKey, cfg.PemCert) {
-				logger.Fatalf("the certificate path is incorrect, Key: %q, Cert: %q", cfg.PemKey, cfg.PemCert)
+				logger.Fatalf("etcd certificate path is incorrect, Key: %q, Cert: %q", cfg.PemKey, cfg.PemCert)
 			}
 
 			etcdCA, err := os.ReadFile(cfg.RootCA)
@@ -131,18 +132,18 @@ func C() *Client {
 	return c
 }
 
-// Fetch returns response, default timeout is 30s
+// Fetch returns response, default timeout is 3s
 func Fetch(key string, opts ...OpOpt) (*ev3.GetResponse, error) {
 	f := getFOpts(opts)
 	ctx, cancel := context.WithTimeout(context.Background(), f.timeout)
 	defer cancel()
 	resp, err := C().Get(ctx, key, f.opOpts...)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(err, "failed fetch from etcd: %s", key)
 	}
 
 	if resp.Count == 0 {
-		return nil, fmt.Errorf("there is no value for key: %s", key)
+		return nil, fmt.Errorf("there is no value in etcd for key: %s", key)
 	}
 	return resp, nil
 }

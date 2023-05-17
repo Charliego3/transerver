@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 
 	"github.com/charliego93/argsx"
+	"github.com/charliego93/logger"
 	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/fsutil"
-	"github.com/transerver/app/logger"
 	"gopkg.in/yaml.v3"
 )
 

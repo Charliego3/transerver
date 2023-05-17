@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/Charliego93/go-i18n/v2 v2.1.3
 	github.com/charliego93/argsx v1.0.3
+	github.com/charliego93/logger v0.0.3
 	github.com/charmbracelet/log v0.2.1
 	github.com/goccy/go-json v0.10.2
 	github.com/gookit/goutil v0.6.8

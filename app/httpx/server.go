@@ -4,8 +4,8 @@ import (
 	"net"
 	"net/http"
 
+	"github.com/charliego93/logger"
 	"github.com/gorilla/mux"
-	"github.com/transerver/app/logger"
 	"github.com/transerver/app/opts"
 	"github.com/transerver/app/service"
 )

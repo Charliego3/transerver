@@ -1,9 +1,11 @@
 package app
 
 import (
+	"github.com/transerver/app/grpcx"
+	"google.golang.org/grpc"
 	"net"
 
-	"github.com/transerver/app/logger"
+	"github.com/charliego93/logger"
 	"github.com/transerver/app/opts"
 )
 
@@ -18,6 +20,16 @@ type Config struct {
 	// grpc server to serve this address
 	// if lis and glis both nil, then glis using dynamic address
 	glis net.Listener
+
+	// gopts is grpcx.Server options
+	gopts []opts.Option[grpcx.Server]
+}
+
+// WithGRPCServerOptions accept grpc server options
+func WithGRPCServerOptions(gopts ...grpc.ServerOption) opts.Option[Config] {
+	return opts.OptionFunc[Config](func(cfg *Config) {
+		cfg.gopts = append(cfg.gopts, grpcx.WithServerOption(gopts...))
+	})
 }
 
 // WithAddr served http and grpc on same address
@@ -43,7 +55,7 @@ func WithListener(lis net.Listener) opts.Option[Config] {
 	})
 }
 
-// WithHttpAddr execpted http server listen address using tcp network
+// WithHttpAddr expected http server listen address using tcp network
 func WithHttpAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)

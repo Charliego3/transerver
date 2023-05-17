@@ -3,7 +3,7 @@ package httpx
 import (
 	"net"
 
-	"github.com/transerver/app/logger"
+	"github.com/charliego93/logger"
 	"github.com/transerver/app/opts"
 )
 

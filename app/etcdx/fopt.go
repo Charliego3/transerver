@@ -14,7 +14,7 @@ type fopt struct {
 type OpOpt func(*fopt)
 
 func getFOpts(opts []OpOpt) *fopt {
-	f := &fopt{timeout: time.Second * 30}
+	f := &fopt{timeout: time.Second * 3}
 	for _, opt := range opts {
 		opt(f)
 	}

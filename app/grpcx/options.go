@@ -3,7 +3,7 @@ package grpcx
 import (
 	"net"
 
-	"github.com/transerver/app/logger"
+	"github.com/charliego93/logger"
 	"github.com/transerver/app/opts"
 	"google.golang.org/grpc"
 )
@@ -12,11 +12,11 @@ import (
 // WithAddr and WithListener just choose one of them
 func WithAddr(network, addr string) opts.Option[Server] {
 	return opts.OptionFunc[Server](func(cfg *Server) {
-		listenr, err := net.Listen(network, addr)
+		listener, err := net.Listen(network, addr)
 		if err != nil {
 			logger.Fatal("failed to listen grpc server", "err", err)
 		}
-		cfg.listener = listenr
+		cfg.listener = listener
 	})
 }
 

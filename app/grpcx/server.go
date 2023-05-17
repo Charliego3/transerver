@@ -3,7 +3,7 @@ package grpcx
 import (
 	"net"
 
-	"github.com/transerver/app/logger"
+	"github.com/charliego93/logger"
 	"github.com/transerver/app/opts"
 	"github.com/transerver/app/service"
 	"google.golang.org/grpc"

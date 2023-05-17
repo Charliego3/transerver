@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/charliego93/logger"
 	"github.com/gookit/goutil/strutil"
 	"github.com/transerver/app/configs"
 	"net"
@@ -11,7 +12,6 @@ import (
 	"github.com/soheilhy/cmux"
 	"github.com/transerver/app/grpcx"
 	"github.com/transerver/app/httpx"
-	"github.com/transerver/app/logger"
 	"github.com/transerver/app/opts"
 	"github.com/transerver/app/service"
 	"github.com/transerver/app/utils"
@@ -42,15 +42,15 @@ func NewApp(opts ...opts.Option[Config]) *Application {
 }
 
 // init handling and aggregation options
-func (app *Application) init(opts ...opts.Option[Config]) {
+func (app *Application) init(aopts ...opts.Option[Config]) {
 	app.cfg = &Config{}
-	for _, opt := range opts {
+	for _, opt := range aopts {
 		opt.Apply(app.cfg)
 	}
 
 	if utils.Nils(app.cfg.glis, app.cfg.hlis) {
 		if app.cfg.lis == nil {
-			listener := app.getConfigedListener()
+			listener := app.getConfigListener()
 			if listener == nil {
 				app.cfg.lis = app.dynamicListener("Application")
 			} else {
@@ -70,10 +70,10 @@ func (app *Application) init(opts ...opts.Option[Config]) {
 	}
 
 	app.http = httpx.NewServer(httpx.WithListener(app.cfg.hlis))
-	app.grpc = grpcx.NewServer(grpcx.WithListener(app.cfg.glis))
+	app.grpc = grpcx.NewServer(append(app.cfg.gopts, grpcx.WithListener(app.cfg.glis))...)
 }
 
-func (app *Application) getConfigedListener() net.Listener {
+func (app *Application) getConfigListener() net.Listener {
 	cfg, err := configs.Fetch[configs.App]()
 	if err == nil && strutil.IsNotBlank(cfg.Address) {
 		if strutil.IsBlank(cfg.Network) {
@@ -82,11 +82,11 @@ func (app *Application) getConfigedListener() net.Listener {
 		if !strings.HasPrefix(cfg.Address, ":") {
 			cfg.Address = ":" + cfg.Address
 		}
-		listner, err := net.Listen(cfg.Network, cfg.Address)
+		listener, err := net.Listen(cfg.Network, cfg.Address)
 		if err != nil {
 			logger.Fatal("failed listen application", "network", cfg.Network, "address", cfg.Address)
 		}
-		return listner
+		return listener
 	}
 	return nil
 }
@@ -141,4 +141,8 @@ func (app *Application) Run() (err error) {
 		err = app.listener.Serve()
 	}
 	return nil
+}
+
+func (app *Application) Shutdown() {
+
 }
