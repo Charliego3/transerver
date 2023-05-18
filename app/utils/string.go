@@ -7,26 +7,17 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
+// String convert[]byte to string
 func String(data []byte) string {
-	//hdr := *(*reflect.SliceHeader)(unsafe.Pointer(&data))
-	//return *(*string)(unsafe.Pointer(&reflect.StringHeader{
-	//	Data: hdr.Data,
-	//	Len:  hdr.Len,
-	//}))
-	return unsafe.String(&data[0], len(data))
+	return unsafe.String(&data[0], unsafe.IntegerType(len(data)))
 }
 
+// Bytes convert string to []byte
 func Bytes(data string) []byte {
-	//hdr := *(*reflect.StringHeader)(unsafe.Pointer(&data))
-	//return *(*[]byte)(unsafe.Pointer(&reflect.SliceHeader{
-	//	Data: hdr.Data,
-	//	Len:  hdr.Len,
-	//	Cap:  hdr.Len,
-	//}))
 	return unsafe.Slice(unsafe.StringData(data), len(data))
 }
 
-// AnyBlank 存在任何一个字符串为空时返回true, 否则返回false
+// AnyBlank has any empty value return true otherwise return false
 func AnyBlank(args ...string) bool {
 	for _, v := range args {
 		if strutil.IsBlank(v) {
@@ -46,7 +37,7 @@ func NonBlanks(args ...string) bool {
 	return true
 }
 
-// Blanks 每一个值都为空时返回true, 存在任何一个不为空的字符串都返回false
+// Blanks all value empty return true otherwise return false
 func Blanks(args ...string) bool {
 	for _, v := range args {
 		if strutil.IsNotBlank(v) {
