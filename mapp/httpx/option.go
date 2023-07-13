@@ -30,3 +30,9 @@ func WithMiddleware(middles ...Middleware) opts.Option[Server] {
 		cfg.middlewares = middles
 	})
 }
+
+func WithLogger(logger logger.Logger) opts.Option[Server] {
+	return opts.OptionFunc[Server](func(cfg *Server) {
+		cfg.logger = logger
+	})
+}

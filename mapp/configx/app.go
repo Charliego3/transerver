@@ -1,4 +1,4 @@
-package configs
+package configx
 
 type App struct {
 	Network string `json:"network,omitempty" yaml:"network,omitempty"`
@@ -8,5 +8,5 @@ type App struct {
 type embeddedAppFetcher struct{}
 
 func (f *embeddedAppFetcher) Fetch() (App, error) {
-	return *instance.App, nil
+	return *embedded.App, nil
 }

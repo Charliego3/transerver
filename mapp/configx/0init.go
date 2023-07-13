@@ -1,4 +1,4 @@
-package configs
+package configx
 
 import (
 	"os"
@@ -18,15 +18,11 @@ type EmbeddedConfig struct {
 	Redis    *Redis    `json:"redis,omitempty" yaml:"redis,omitempty"`
 }
 
-var (
-	disabled bool
-	instance EmbeddedConfig
-)
+var embedded EmbeddedConfig
 
 func init() {
 	configPath := argsx.Fetch("config").MustString("./config.yaml")
-	disabled = !fsutil.FileExist(configPath)
-	if disabled {
+	if !fsutil.FileExist(configPath) {
 		return
 	}
 
@@ -37,19 +33,19 @@ func init() {
 
 	switch filepath.Ext(configPath) {
 	case ".yaml":
-		err = yaml.Unmarshal(bs, &instance)
+		err = yaml.Unmarshal(bs, &embedded)
 	case ".json":
-		err = json.Unmarshal(bs, &instance)
+		err = json.Unmarshal(bs, &embedded)
 	}
 
 	if err != nil {
 		logger.Fatal("failed to load default config from file", "file", configPath, "err", err)
 	}
 
-	register[Etcd](instance.Etcd, &embeddedEtcdFetcher{})
-	register[App](instance.App, &embeddedAppFetcher{})
-	register[Redis](instance.Redis, &embeddedRedisFetcher{})
-	register[Database](instance.Database, &embeddedDatabaseFetcher{})
+	register[Etcd](embedded.Etcd, &embeddedEtcdFetcher{})
+	register[App](embedded.App, &embeddedAppFetcher{})
+	register[Redis](embedded.Redis, &embeddedRedisFetcher{})
+	register[Database](embedded.Database, &embeddedDatabaseFetcher{})
 }
 
 // register register fetcher to fetchers if obj is not nil

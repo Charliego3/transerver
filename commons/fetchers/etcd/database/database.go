@@ -2,13 +2,13 @@ package fetchers
 
 import (
 	"github.com/goccy/go-json"
-	configs "github.com/transerver/mapp/configx"
+	"github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/etcdx"
 )
 
 type Database struct{}
 
-func (f *Database) Fetch() (cfg configs.Database, err error) {
+func (f *Database) Fetch() (cfg configx.Database, err error) {
 	resp, e := etcdx.Fetch("")
 	if e != nil {
 		return cfg, e
@@ -19,5 +19,5 @@ func (f *Database) Fetch() (cfg configs.Database, err error) {
 }
 
 func init() {
-	configs.RegisterCachedFetcher[configs.Database](&Database{})
+	configx.RegisterCachedFetcher[configx.Database](&Database{})
 }

@@ -18,6 +18,8 @@ type Server struct {
 
 	// http server middleware
 	middlewares []Middleware
+
+	logger logger.Logger
 }
 
 type Middleware = mux.MiddlewareFunc
@@ -30,6 +32,10 @@ func NewServer(opts ...opts.Option[Server]) *Server {
 	h.init(opts)
 	h.Use(h.middlewares...)
 	return h
+}
+
+func (h *Server) Logger() logger.Logger {
+	return h.logger
 }
 
 // init accept options to Server
@@ -50,5 +56,6 @@ func (h *Server) RegisterService(service ...service.Service) {
 }
 
 func (h *Server) Run() error {
-	return nil
+	h.logger.Info("serveing...")
+	return http.Serve(h.listener, nil)
 }

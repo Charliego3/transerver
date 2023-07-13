@@ -1,4 +1,4 @@
-package configs
+package configx
 
 import "time"
 
@@ -15,5 +15,5 @@ type Database struct {
 type embeddedDatabaseFetcher struct{}
 
 func (f *embeddedDatabaseFetcher) Fetch() (Database, error) {
-	return *instance.Database, nil
+	return *embedded.Database, nil
 }

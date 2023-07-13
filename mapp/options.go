@@ -1,4 +1,4 @@
-package app
+package mapp
 
 import (
 	"net"
@@ -36,7 +36,7 @@ type Config struct {
 	gopts []opts.Option[grpcx.Server]
 
 	// middles accept http server Middleware
-	middles []httpx.Middleware
+	hopts []opts.Option[httpx.Server]
 
 	logger logger.Logger
 }
@@ -53,9 +53,9 @@ func DisableGRPC() opts.Option[Config] {
 	})
 }
 
-func WithHttpMiddleware(middles ...httpx.Middleware) opts.Option[Config] {
+func WithHttpOpts(hopts ...opts.Option[httpx.Server]) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
-		cfg.middles = middles
+		cfg.hopts = hopts
 	})
 }
 
@@ -65,8 +65,8 @@ func OnStartup(fn func(*Application) error) opts.Option[Config] {
 	})
 }
 
-// WithGrpcServerOptions accept grpc server options
-func WithGrpcServerOptions(gopts ...grpc.ServerOption) opts.Option[Config] {
+// WithGrpcServerOpts accept grpc server options
+func WithGrpcServerOpts(gopts ...grpc.ServerOption) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		cfg.gopts = append(cfg.gopts, grpcx.WithServerOption(gopts...))
 	})

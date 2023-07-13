@@ -13,7 +13,7 @@ import (
 
 	"github.com/charliego93/logger"
 	"github.com/gookit/goutil/strutil"
-	configs "github.com/transerver/mapp/configx"
+	"github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -74,7 +74,7 @@ var (
 // C returns etcd client from config
 func C() *Client {
 	o.Do(func() {
-		cfg, err := configs.Fetch[configs.Etcd]()
+		cfg, err := configx.Fetch[configx.Etcd]()
 		if err != nil {
 			logger.Fatal("not resolved etcd config", "err", err)
 		}

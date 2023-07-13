@@ -1,4 +1,4 @@
-package configs
+package configx
 
 import (
 	"time"
@@ -26,5 +26,5 @@ type Etcd struct {
 type embeddedEtcdFetcher struct{}
 
 func (f *embeddedEtcdFetcher) Fetch() (Etcd, error) {
-	return *instance.Etcd, nil
+	return *embedded.Etcd, nil
 }

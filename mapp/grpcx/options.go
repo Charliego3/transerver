@@ -34,3 +34,9 @@ func WithServerOption(gsos ...grpc.ServerOption) opts.Option[Server] {
 		cfg.srvOpts = gsos
 	})
 }
+
+func WithLogger(logger logger.Logger) opts.Option[Server] {
+	return opts.OptionFunc[Server](func(cfg *Server) {
+		cfg.logger = logger
+	})
+}

@@ -13,6 +13,7 @@ type Server struct {
 	listener net.Listener
 	server   *grpc.Server
 	srvOpts  []grpc.ServerOption
+	logger   logger.Logger
 }
 
 // NewServer returns grpc server instance
@@ -22,6 +23,10 @@ func NewServer(opts ...opts.Option[Server]) *Server {
 	return srv
 }
 
+func (g *Server) Logger() logger.Logger {
+	return g.logger
+}
+
 // init initialize server properties
 func (g *Server) init(opts ...opts.Option[Server]) {
 	for _, opt := range opts {
@@ -29,7 +34,7 @@ func (g *Server) init(opts ...opts.Option[Server]) {
 	}
 
 	if g.listener == nil {
-		logger.Fatal("grpc server has no address specified, use WithAddr or WithListener to specify")
+		logger.Fatal("gRPC server has no address specified, use WithAddr or WithListener to specify")
 	}
 	g.server = grpc.NewServer(g.srvOpts...)
 }
@@ -47,6 +52,6 @@ func (g *Server) RegisterService(services ...service.Service) {
 }
 
 func (g *Server) Run() error {
-	logger.Info("Grpc serveing...")
+	g.logger.Info("serveing...")
 	return g.server.Serve(g.listener)
 }

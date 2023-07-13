@@ -7,7 +7,7 @@ import (
 	"github.com/charliego93/argsx"
 	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/strutil"
-	configs "github.com/transerver/mapp/configx"
+	"github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/utils"
 )
 
@@ -17,9 +17,9 @@ func (f *Etcd) getByPrefix(key string) string {
 	return os.Getenv("ETCD_" + key)
 }
 
-func (f *Etcd) Fetch() (configs.Etcd, error) {
+func (f *Etcd) Fetch() (configx.Etcd, error) {
 	cfgJson := f.getByPrefix("JSON_CONFIG")
-	var cfg configs.Etcd
+	var cfg configx.Etcd
 	if strutil.IsNotBlank(cfgJson) && cfgJson[0] == '{' {
 		err := json.Unmarshal(utils.Bytes(cfgJson), &cfg)
 		return cfg, err
@@ -43,5 +43,5 @@ func (f *Etcd) Fetch() (configs.Etcd, error) {
 }
 
 func init() {
-	configs.RegisterCachedFetcher[configs.Etcd](&Etcd{})
+	configx.RegisterCachedFetcher[configx.Etcd](&Etcd{})
 }

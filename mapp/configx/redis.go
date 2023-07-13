@@ -1,4 +1,4 @@
-package configs
+package configx
 
 import "time"
 
@@ -49,5 +49,5 @@ type Redis struct {
 type embeddedRedisFetcher struct{}
 
 func (f *embeddedRedisFetcher) Fetch() (Redis, error) {
-	return *instance.Redis, nil
+	return *embedded.Redis, nil
 }

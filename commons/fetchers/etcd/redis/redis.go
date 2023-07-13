@@ -2,13 +2,13 @@ package fetchers
 
 import (
 	"github.com/goccy/go-json"
-	configs "github.com/transerver/mapp/configx"
+	"github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/etcdx"
 )
 
 type Redis struct{}
 
-func (f *Redis) Fetch() (cfg configs.Redis, err error) {
+func (f *Redis) Fetch() (cfg configx.Redis, err error) {
 	resp, e := etcdx.Fetch("")
 	if e != nil {
 		return cfg, e
@@ -19,5 +19,5 @@ func (f *Redis) Fetch() (cfg configs.Redis, err error) {
 }
 
 func init() {
-	configs.RegisterCachedFetcher[configs.Redis](&Redis{})
+	configx.RegisterCachedFetcher[configx.Redis](&Redis{})
 }
