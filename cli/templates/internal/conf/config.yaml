@@ -1,9 +1,0 @@
-environment: dev
-address: ":9090"
-database:
-  dsn: "postgres://root:root@127.0.0.1:5432/{{ .ModName }}?sslmode=disable"
-  options:
-    maxOpenConns: 1
-    maxIdleConns: 2
-    maxIdleTime: 30m
-    maxLifetime: 1h

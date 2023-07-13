@@ -1,7 +1,0 @@
-environment: dev
-address: ":9090"
-
-services:
-  - target: "discovery:///accounts"
-    config:
-      loadBalancingPolicy: "round_robin"

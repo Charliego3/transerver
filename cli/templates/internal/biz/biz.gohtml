@@ -1,9 +1,0 @@
-package biz
-
-import "github.com/google/wire"
-
-var ProviderSet = wire.NewSet(
-{{- range $name := .Services }}
-	New{{ $name }}Usecase,
-{{- end }}
-)
