@@ -4,8 +4,8 @@ import (
 	"net"
 
 	"github.com/charliego93/logger"
-	"github.com/transerver/app/opts"
-	"github.com/transerver/app/service"
+	"github.com/transerver/mapp/opts"
+	"github.com/transerver/mapp/service"
 	"google.golang.org/grpc"
 )
 

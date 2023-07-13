@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/charliego93/logger"
-	"github.com/transerver/app/opts"
+	"github.com/transerver/mapp/opts"
 )
 
 // WithAddr use network and addr create a listener to serve

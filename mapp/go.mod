@@ -1,4 +1,4 @@
-module github.com/transerver/app
+module github.com/transerver/mapp
 
 go 1.20
 

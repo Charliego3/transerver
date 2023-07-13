@@ -2,8 +2,8 @@ package fetchers
 
 import (
 	"github.com/goccy/go-json"
-	"github.com/transerver/app/configs"
-	"github.com/transerver/app/etcdx"
+	"github.com/transerver/mapp/configs"
+	"github.com/transerver/mapp/etcdx"
 )
 
 type Database struct{}

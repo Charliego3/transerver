@@ -7,8 +7,8 @@ import (
 	"github.com/charliego93/argsx"
 	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/app/configs"
-	"github.com/transerver/utils"
+	"github.com/transerver/mapp/configs"
+	"github.com/transerver/mapp/utils"
 )
 
 type Etcd struct{}

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/transerver/app"
 	_ "github.com/transerver/commons/fetchers/env/etcd"
 	_ "github.com/transerver/commons/fetchers/etcd/database"
 	_ "github.com/transerver/commons/fetchers/etcd/redis"
+	app "github.com/transerver/mapp"
 )
 
 func main() {

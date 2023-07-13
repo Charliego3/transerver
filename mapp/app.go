@@ -1,20 +1,21 @@
 package app
 
 import (
-	"github.com/charliego93/logger"
-	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/app/configs"
 	"net"
 	"net/http"
 	"strings"
 
+	"github.com/charliego93/logger"
+	"github.com/gookit/goutil/strutil"
+	"github.com/transerver/mapp/configs"
+
 	"github.com/pkg/errors"
 	"github.com/soheilhy/cmux"
-	"github.com/transerver/app/grpcx"
-	"github.com/transerver/app/httpx"
-	"github.com/transerver/app/opts"
-	"github.com/transerver/app/service"
-	"github.com/transerver/app/utils"
+	"github.com/transerver/mapp/grpcx"
+	"github.com/transerver/mapp/httpx"
+	"github.com/transerver/mapp/opts"
+	"github.com/transerver/mapp/service"
+	"github.com/transerver/mapp/utils"
 )
 
 var Name string

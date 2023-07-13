@@ -2,13 +2,14 @@ package gs
 
 import (
 	"context"
+
 	"github.com/Charliego93/go-i18n/v2"
 	grpc_auth "github.com/grpc-ecosystem/go-grpc-middleware/auth"
 	grpc_zap "github.com/grpc-ecosystem/go-grpc-middleware/logging/zap"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
 	grpc_ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	grpc_opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
-	"github.com/transerver/utils"
+	"github.com/transerver/mapp/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )

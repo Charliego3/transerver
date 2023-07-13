@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/charliego93/logger"
-	"github.com/transerver/app/etcdx"
 	_ "github.com/transerver/commons/fetchers/env/etcd"
 	_ "github.com/transerver/commons/fetchers/etcd/database"
 	_ "github.com/transerver/commons/fetchers/etcd/redis"
+	"github.com/transerver/mapp/etcdx"
 )
 
 func main() {

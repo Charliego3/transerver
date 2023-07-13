@@ -3,11 +3,12 @@ package data
 import (
 	"context"
 	"database/sql"
+
 	"github.com/gookit/goutil/strutil"
 	"github.com/transerver/accounts/internal/biz"
 	db "github.com/transerver/accounts/internal/data/sqlc"
+	"github.com/transerver/mapp/utils"
 	"github.com/transerver/pkg1/errors"
-	"github.com/transerver/utils"
 )
 
 type accountRepo struct{}

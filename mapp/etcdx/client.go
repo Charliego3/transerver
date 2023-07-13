@@ -5,15 +5,16 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"github.com/pkg/errors"
 	"os"
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/charliego93/logger"
 	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/app/configs"
-	"github.com/transerver/app/utils"
+	"github.com/transerver/mapp/configs"
+	"github.com/transerver/mapp/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 

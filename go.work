@@ -2,7 +2,7 @@ go 1.20
 
 use (
 	./accounts
-	./app
+	./mapp
 	./cli
 	./commons
 	./gateway

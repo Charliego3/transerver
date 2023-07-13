@@ -5,7 +5,7 @@ package enums
 import (
 	"database/sql/driver"
 	"fmt"
-	"github.com/transerver/utils"
+	"github.com/transerver/mapp/utils"
 )
 
 const _UserStateName = "UnverifiedNormal"

@@ -2,14 +2,15 @@ package gw
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"github.com/transerver/utils"
+	"github.com/transerver/mapp/utils"
 	"google.golang.org/genproto/googleapis/api/httpbody"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/wrapperspb"
-	"net/http"
 )
 
 func err2resp(_ context.Context, err error) (resp utils.ResponseEntity, code codes.Code) {

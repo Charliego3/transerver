@@ -1,12 +1,13 @@
 package app
 
 import (
-	"github.com/transerver/app/grpcx"
-	"google.golang.org/grpc"
 	"net"
 
+	"github.com/transerver/mapp/grpcx"
+	"google.golang.org/grpc"
+
 	"github.com/charliego93/logger"
-	"github.com/transerver/app/opts"
+	"github.com/transerver/mapp/opts"
 )
 
 type Config struct {

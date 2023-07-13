@@ -9,7 +9,7 @@ import (
 
 // String convert[]byte to string
 func String(data []byte) string {
-	return unsafe.String(&data[0], unsafe.IntegerType(len(data)))
+	return unsafe.String(&data[0], len(data))
 }
 
 // Bytes convert string to []byte

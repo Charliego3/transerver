@@ -6,8 +6,8 @@ import (
 
 	"github.com/charliego93/logger"
 	"github.com/gorilla/mux"
-	"github.com/transerver/app/opts"
-	"github.com/transerver/app/service"
+	"github.com/transerver/mapp/opts"
+	"github.com/transerver/mapp/service"
 )
 
 type Server struct {
