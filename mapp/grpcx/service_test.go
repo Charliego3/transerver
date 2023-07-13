@@ -2,6 +2,7 @@ package grpcx
 
 import (
 	"context"
+	"strconv"
 	"testing"
 
 	"github.com/charmbracelet/log"
@@ -53,8 +54,10 @@ func TestClient(t *testing.T) {
 	defer conn.Close()
 
 	c := acctspb.NewAccountServiceClient(conn)
-	reply, err := c.Register(context.Background(), &acctspb.RegisterRequest{Uname: "Charlie", Email: "charlie.go.3@outlook.com"})
-	require.NoError(t, err)
-
-	t.Logf("Response: %+v", reply)
+	for i := 0; i < 5; i++ {
+		idx := strconv.Itoa(i + 1)
+		reply, err := c.Register(context.Background(), &acctspb.RegisterRequest{Uname: "Charlie" + idx, Email: "charlie.go.3@outlook.com"})
+		require.NoError(t, err)
+		log.Infof("Response: %+v, Idx = %d", reply, i+1)
+	}
 }

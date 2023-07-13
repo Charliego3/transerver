@@ -13,7 +13,7 @@ import (
 
 	"github.com/charliego93/logger"
 	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/mapp/configs"
+	configs "github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/utils"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

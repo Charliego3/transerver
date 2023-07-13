@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/transerver/mapp/grpcx"
+	"github.com/transerver/mapp/httpx"
 	"google.golang.org/grpc"
 
 	"github.com/charliego93/logger"
@@ -22,12 +23,50 @@ type Config struct {
 	// if lis and glis both nil, then glis using dynamic address
 	glis net.Listener
 
+	// disableHTTP only serve grpc server
+	disableHTTP bool
+
+	// disableGRPC only serve http server
+	disableGRPC bool
+
+	// onStartup run on Applition after init
+	onStartup func(*Application) error
+
 	// gopts is grpcx.Server options
 	gopts []opts.Option[grpcx.Server]
+
+	// middles accept http server Middleware
+	middles []httpx.Middleware
+
+	logger logger.Logger
 }
 
-// WithGRPCServerOptions accept grpc server options
-func WithGRPCServerOptions(gopts ...grpc.ServerOption) opts.Option[Config] {
+func DisableHTTP() opts.Option[Config] {
+	return opts.OptionFunc[Config](func(cfg *Config) {
+		cfg.disableHTTP = true
+	})
+}
+
+func DisableGRPC() opts.Option[Config] {
+	return opts.OptionFunc[Config](func(cfg *Config) {
+		cfg.disableGRPC = true
+	})
+}
+
+func WithHttpMiddleware(middles ...httpx.Middleware) opts.Option[Config] {
+	return opts.OptionFunc[Config](func(cfg *Config) {
+		cfg.middles = middles
+	})
+}
+
+func OnStartup(fn func(*Application) error) opts.Option[Config] {
+	return opts.OptionFunc[Config](func(cfg *Config) {
+		cfg.onStartup = fn
+	})
+}
+
+// WithGrpcServerOptions accept grpc server options
+func WithGrpcServerOptions(gopts ...grpc.ServerOption) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		cfg.gopts = append(cfg.gopts, grpcx.WithServerOption(gopts...))
 	})
@@ -38,7 +77,7 @@ func WithAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)
 		if err != nil {
-			logger.Fatal("failed to listen app", "err", err)
+			cfg.logger.Fatal("failed to listen app", "err", err)
 		}
 		cfg.lis = listener
 	})
@@ -61,7 +100,7 @@ func WithHttpAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)
 		if err != nil {
-			logger.Fatal("failed to listen http server with app", "err", err)
+			cfg.logger.Fatal("failed to listen http server with app", "err", err)
 		}
 		cfg.hlis = listener
 	})
@@ -79,7 +118,7 @@ func WithGrpcAddr(network, addr string) opts.Option[Config] {
 	return opts.OptionFunc[Config](func(cfg *Config) {
 		listener, err := net.Listen(network, addr)
 		if err != nil {
-			logger.Fatal("failed to listen grpc server with app", "err", err)
+			cfg.logger.Fatal("failed to listen grpc server with app", "err", err)
 		}
 		cfg.glis = listener
 	})

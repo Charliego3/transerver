@@ -2,7 +2,7 @@ package fetchers
 
 import (
 	"github.com/goccy/go-json"
-	"github.com/transerver/mapp/configs"
+	configs "github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/etcdx"
 )
 

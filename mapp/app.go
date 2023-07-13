@@ -7,7 +7,7 @@ import (
 
 	"github.com/charliego93/logger"
 	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/mapp/configs"
+	configs "github.com/transerver/mapp/configx"
 
 	"github.com/pkg/errors"
 	"github.com/soheilhy/cmux"
@@ -39,12 +39,17 @@ type Application struct {
 func NewApp(opts ...opts.Option[Config]) *Application {
 	app := &Application{}
 	app.init(opts...)
+	if app.cfg.onStartup != nil {
+		app.cfg.onStartup(app)
+	}
 	return app
 }
 
 // init handling and aggregation options
 func (app *Application) init(aopts ...opts.Option[Config]) {
-	app.cfg = &Config{}
+	app.cfg = &Config{
+		logger: logger.WithPrefixf("Application[%s]", Name),
+	}
 	for _, opt := range aopts {
 		opt.Apply(app.cfg)
 	}
@@ -80,12 +85,12 @@ func (app *Application) getConfigListener() net.Listener {
 		if strutil.IsBlank(cfg.Network) {
 			cfg.Network = "tcp"
 		}
-		if !strings.HasPrefix(cfg.Address, ":") {
+		if !strings.Contains(cfg.Address, ":") {
 			cfg.Address = ":" + cfg.Address
 		}
 		listener, err := net.Listen(cfg.Network, cfg.Address)
 		if err != nil {
-			logger.Fatal("failed listen application", "network", cfg.Network, "address", cfg.Address)
+			app.cfg.logger.Fatal("failed listen application", "network", cfg.Network, "address", cfg.Address)
 		}
 		return listener
 	}
@@ -96,10 +101,10 @@ func (app *Application) getConfigListener() net.Listener {
 func (app *Application) dynamicListener(server string) net.Listener {
 	listener, err := net.Listen("tcp", ":0")
 	if err != nil {
-		logger.Fatal("failed to listen", "server", server, "err", err)
+		app.cfg.logger.Fatal("failed to listen", "server", server, "err", err)
 	}
 
-	logger.Warn("No address is specified so dynamic addresses are used",
+	app.cfg.logger.Warn("No address is specified so dynamic addresses are used",
 		"server", server, "address", listener.Addr().String())
 	return listener
 }
@@ -123,12 +128,15 @@ func (app *Application) RegisterService(services ...service.Service) {
 func (app *Application) Run() (err error) {
 	go func() {
 		herr := app.grpc.Run()
-		if herr != nil {
-			if err == nil {
-				err = errors.Wrap(herr, "grpc server got an error")
-			} else {
-				err = errors.Wrap(err, errors.Wrap(herr, "grpc server got an error").Error())
-			}
+		if herr == nil {
+			return
+		}
+
+		herr = errors.Wrap(herr, "grpc server got an error")
+		if err == nil {
+			err = errors.Wrap(herr, "grpc server got an error")
+		} else {
+			err = errors.Wrap(err, errors.Wrap(herr, "grpc server got an error").Error())
 		}
 	}()
 	go func() {

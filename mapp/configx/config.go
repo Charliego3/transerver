@@ -48,8 +48,8 @@ func getFetcher[T any]() (Fetcher[T], bool) {
 		return nil, false
 	}
 
-	for _, fetcher := range fetchers {
-		if f, ok := fetcher.(Fetcher[T]); ok {
+	for i := len(fetchers) - 1; i >= 0; i-- {
+		if f, ok := fetchers[i].(Fetcher[T]); ok {
 			return f, true
 		}
 	}
@@ -58,9 +58,7 @@ func getFetcher[T any]() (Fetcher[T], bool) {
 
 func getConfig[T any]() (t T, ok error) {
 	if f, ok := getFetcher[T](); ok {
-		if fetcher, ok := (any)(f).(Fetcher[T]); ok {
-			return fetcher.Fetch()
-		}
+		return f.Fetch()
 	}
 	return t, fmt.Errorf("config not found: %T", t)
 }

@@ -7,7 +7,7 @@ import (
 	"github.com/charliego93/argsx"
 	"github.com/goccy/go-json"
 	"github.com/gookit/goutil/strutil"
-	"github.com/transerver/mapp/configs"
+	configs "github.com/transerver/mapp/configx"
 	"github.com/transerver/mapp/utils"
 )
 

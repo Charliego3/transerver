@@ -47,5 +47,6 @@ func (g *Server) RegisterService(services ...service.Service) {
 }
 
 func (g *Server) Run() error {
-	return nil
+	logger.Info("Grpc serveing...")
+	return g.server.Serve(g.listener)
 }
