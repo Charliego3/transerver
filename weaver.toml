@@ -1,2 +1,9 @@
 [serviceweaver]
 binary = "./transerver"
+colocate = [
+    ["github.com/ServiceWeaver/weaver/Main"],
+    ["github.com/charliego93/transerver/Reverser"]
+]
+
+[single]
+listeners.endpoint = { address = "127.0.0.1:58062" }

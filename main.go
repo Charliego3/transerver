@@ -3,51 +3,42 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 
 	"github.com/ServiceWeaver/weaver"
+	"github.com/charliego3/shandler"
 )
 
 func main() {
-	if err := weaver.Run(context.Background()); err != nil {
-		log.Fatal(err)
+	slog.SetDefault(slog.New(shandler.NewTextHandler(shandler.WithCaller())))
+	if err := weaver.Run(context.Background(), serve); err != nil {
+		slog.Error("application running got an error", "err", err)
 	}
 }
 
 type app struct {
 	weaver.Implements[weaver.Main]
 	reverser weaver.Ref[Reverser]
+	endpoint weaver.Listener
 }
 
-func (app *app) Init(context.Context) error {
-	log.Println("app inited ....")
-	return nil
-}
-
-func (app *app) Main(ctx context.Context) error {
-	// Get a network listener on address "localhost:12345".
-	opts := weaver.ListenerOptions{LocalAddress: "localhost:12345"}
-	lis, err := app.Listener("transerver", opts)
-	if err != nil {
-		return err
-	}
-	fmt.Printf("transerver listener available on %v\n", lis)
-
-	// Serve the /hello endpoint.
-	http.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
-		name := r.URL.Query().Get("name")
-		if name == "" {
-			name = "World"
-		}
-		reversed, err := app.reverser.Get().Reverse(ctx, name)
+func serve(ctx context.Context, app *app) error {
+	http.HandleFunc("/reverse", func(w http.ResponseWriter, r *http.Request) {
+		key := r.URL.Query().Get("key")
+		var reverser Reverser = app.reverser.Get()
+		reversed, err := reverser.Reverse(ctx, key)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			w.WriteHeader(500)
+			fmt.Fprintf(w, `{"code":50001,"message":"%s"}`, err)
 			return
 		}
-		_, _ = fmt.Fprintf(w, "Hello, %s!\n", reversed)
+
+		w.WriteHeader(200)
+		fmt.Fprintf(w, `{"code": 20000, "message": "success", "payload": "%s"}`, reversed)
+		app.Logger(ctx).Info("request is completed")
 	})
-	return http.Serve(lis, nil)
+	return http.Serve(app.endpoint, nil)
 }
 
 type Reverser interface {
