@@ -1,8 +1,9 @@
 package utils
 
 import (
-	json "github.com/json-iterator/go"
 	"net/http"
+
+	json "github.com/json-iterator/go"
 )
 
 type ResponseEntity interface {
@@ -40,4 +41,8 @@ func NewErrResponse(code int, msg string) ResponseEntity {
 
 func NewResponse(payload any) ResponseEntity {
 	return &re{Codes: http.StatusOK, Msg: "OK", Payload: payload}
+}
+
+func (r re) String() string {
+	return "this is responseEntity"
 }

@@ -1,0 +1,27 @@
+### Fetch UnquieId
+GET http://localhost:9090/unique
+Accept: application/json
+
+### Generate PubKey
+GET http://localhost:9090/rsa/v1/pubkey/register/?g=true
+Accept: application/json
+
+### Fetch RegionList
+GET http://localhost:9090/regions
+Accept-Language: en
+Accept: application/json+pretty
+
+### Register
+POST http://localhost:9090/user/v1/register
+Content-Type: application/json
+Accept: application/json
+Accept-Language: en
+
+{
+  "unique": "ubR0gB7pAs3LXKhC7opeT",
+  "region": "CN",
+  "phone": "15293239871",
+  "email": "",
+  "code": "123456",
+  "password": "xx"
+}

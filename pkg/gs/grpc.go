@@ -139,5 +139,6 @@ func (s *Server) Run() error {
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGKILL, syscall.SIGABRT, syscall.SIGIOT, syscall.SIGTERM)
 	<-ch
 
+	logger.Sugar().Infof("[%s] grpc server closing...", app.Name)
 	return nil
 }

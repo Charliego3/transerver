@@ -1,4 +1,4 @@
-module github.com/transerver/accounts
+module github.com/charliego93/userhub
 
 go 1.19
 

@@ -1,3 +1,5 @@
+.fleet/
+
 !**/ent
 **/ent/*
 !**/ent/generate.go
